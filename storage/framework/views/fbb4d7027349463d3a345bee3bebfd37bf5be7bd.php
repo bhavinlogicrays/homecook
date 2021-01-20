@@ -22,22 +22,22 @@
                 <i class="ni ni-basket text-success"></i> <?php echo e(__('Live Orders')); ?><div class="blob red"></div>
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('drivers.index')); ?>">
                 <i class="ni ni-delivery-fast text-pink"></i> <?php echo e(__('Drivers')); ?>
 
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('clients.index')); ?>">
-                <i class="ni ni-single-02 text-blue"></i> <?php echo e(__('Clients')); ?>
+                <i class="ni ni-single-02 text-blue"></i> <?php echo e(__('Users')); ?>
 
             </a>
         </li>
         <?php endif; ?>
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('admin.restaurants.index')); ?>">
-                <i class="ni ni-shop text-info"></i> <?php echo e(__('Restaurants')); ?>
+                <i class="ni ni-shop text-info"></i> <?php echo e(__('Chefs')); ?>
 
             </a>
         </li>
@@ -57,12 +57,12 @@
             </a>
         </li>
         <?php endif; ?>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('pages.index')); ?>">
                 <i class="ni ni-ungroup text-info"></i> <?php echo e(__('Pages')); ?>
 
             </a>
-        </li>
+        </li> -->
         <?php if(env('ENABLE_PRICING',false)): ?>
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('plans.index')); ?>">
@@ -74,7 +74,7 @@
         <?php if(config('app.ordering')&&env('ENABLE_FINANCES_ADMIN',true)): ?>
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('finances.admin')); ?>">
-                <i class="ni ni-money-coins text-blue"></i> <?php echo e(__('Finances')); ?>
+                <i class="ni ni-money-coins text-blue"></i> <?php echo e(__('Revenue')); ?>
 
             </a>
         </li>
@@ -89,7 +89,7 @@
          </li>
          <?php endif; ?>
         <?php if(config('app.isqrsaas')): ?>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <?php
                 $theLocaleToOpen=strtolower(env('APP_LOCALE',"EN"));
                 if( strtolower(session('applocale_change')).""!=""){
@@ -100,14 +100,14 @@
                 <i class="ni ni-world text-orange"></i><?php echo e(__('Translations')); ?>
 
             </a>
-        </li>
+        </li> -->
         <?php else: ?>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" target="_blank" href="<?php echo e(url('/admin/languages')."/".strtolower(env('APP_LOCALE',"EN"))."/translations"); ?>">
                 <i class="ni ni-world text-orange"></i> <?php echo e(__('Translations')); ?>
 
             </a>
-        </li>
+        </li> -->
         <?php endif; ?>
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('settings.index')); ?>">

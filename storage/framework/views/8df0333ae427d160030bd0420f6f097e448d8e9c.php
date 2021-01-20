@@ -99,7 +99,7 @@
             <hr class="my-3">
             <!-- Heading -->
             <?php if(auth()->check() && auth()->user()->hasRole('admin')): ?>
-            <h6 class="navbar-heading text-muted"><?php echo e(__('Version')); ?> <?php echo e(config('config.version')); ?>   <span id="uptodate" class="badge badge-success" style="display:none;"><?php echo e(__('latest')); ?></span></h6>
+            <!-- <h6 class="navbar-heading text-muted"><?php echo e(__('Version')); ?> <?php echo e(config('config.version')); ?>   <span id="uptodate" class="badge badge-success" style="display:none;"><?php echo e(__('latest')); ?></span></h6>
                 <h6><?php echo e(\Carbon\Carbon::now()); ?> </h6>
                 
                 <hr class="my-3">
@@ -113,7 +113,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div> 
-                
+                 -->
             <?php endif; ?>
             
         </div>

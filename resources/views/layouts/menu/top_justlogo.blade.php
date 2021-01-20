@@ -43,41 +43,45 @@
           </div>
 
           <ul class="navbar-nav align-items-lg-center ml-lg-auto">
-              @if(\Request::route()->getName() == "vendor")
+            @isset($restorant)
                 @if(config('app.isqrsaas'))
-                @if(env('ENABLE_CALL_WAITER', false) && strlen(env('PUSHER_APP_ID',"")) > 2 && strlen(env('PUSHER_APP_KEY',"")) > 2 && strlen(env('PUSHER_APP_SECRET',"")) > 2)
-                <li class="web-menu mr-1">
-                    <button type="button" class="btn btn-neutral btn-icon btn-cart" data-toggle="modal" data-target="#modal-form">
-                      <span class="btn-inner--icon">
-                        <i class="fa fa-bell"></i>
-                      </span>
-                      <span class="nav-link-inner--text">{{ __('Call Waiter') }}</span>
-                    </button>
-                  </li>
+                  
+                  @if(env('ENABLE_CALL_WAITER', false) && strlen(env('PUSHER_APP_ID',"")) > 2 && strlen(env('PUSHER_APP_KEY',"")) > 2 && strlen(env('PUSHER_APP_SECRET',"")) > 2)
+                    <li class="web-menu mr-1">
+                      <button type="button" class="btn btn-neutral btn-icon btn-cart" data-toggle="modal" data-target="#modal-form">
+                        <span class="btn-inner--icon">
+                          <i class="fa fa-bell"></i>
+                        </span>
+                        <span class="nav-link-inner--text">{{ __('Call Waiter') }}</span>
+                      </button>
+                    </li>
                   @endif
+                  
                   @if(env('ENABLE_GUEST_LOG',true))
-                  <li class="web-menu mr-1">
-                    <a  href="{{ route('register.visit',['restaurant_id'=>$restorant->id])}}" class="btn btn-neutral btn-icon btn-cart" style="cursor:pointer;">
-                          <span class="btn-inner--icon">
-                            <i class="fa fa-calendar-plus-o"></i>
-                          </span>
-                          <span class="nav-link-inner--text">{{ __('Register visit') }}</span>
-                      </a>
-                  </li>
+                    <li class="web-menu mr-1">
+                      <a  href="{{ route('register.visit',['restaurant_id'=>$restorant->id])}}" class="btn btn-neutral btn-icon btn-cart" style="cursor:pointer;">
+                            <span class="btn-inner--icon">
+                              <i class="fa fa-calendar-plus-o"></i>
+                            </span>
+                            <span class="nav-link-inner--text">{{ __('Register visit') }}</span>
+                        </a>
+                    </li>
                   @endif
+
                   @if(isset($hasGuestOrders)&&$hasGuestOrders)
-                  <li class="web-menu mr-1">
-                    <a  href="{{ route('guest.orders')}}" class="btn btn-neutral btn-icon btn-cart" style="cursor:pointer;">
-                      <span class="btn-inner--icon">
-                        <i class="fa fa-list-alt"></i>
-                      </span>
-                      <span class="nav-link-inner--text">{{ __('My Orders') }}</span>
-                    </a>
-                  </li>
+                    <li class="web-menu mr-1">
+                      <a  href="{{ route('guest.orders')}}" class="btn btn-neutral btn-icon btn-cart" style="cursor:pointer;">
+                        <span class="btn-inner--icon">
+                          <i class="fa fa-list-alt"></i>
+                        </span>
+                        <span class="nav-link-inner--text">{{ __('My Orders') }}</span>
+                      </a>
+                    </li>
                   @endif
+
                 @endif
 
-              @endif
+            @endisset
 
 
             @if(\Request::route()->getName() != "newrestaurant.register" && config('app.ordering'))
@@ -95,21 +99,16 @@
             </li>
             @endif
             <li class="mobile-menu">
-              @if(\Request::route()->getName() == "vendor")
-                @if(config('app.isqrsaas'))
-
-                @if(env('ENABLE_CALL_WAITER', false) && strlen(env('PUSHER_APP_ID',"")) > 2 && strlen(env('PUSHER_APP_KEY',"")) > 2 && strlen(env('PUSHER_APP_SECRET',"")) > 2)
+              @isset($restorant)
                 
+                @if(config('app.isqrsaas'))
+                  @if(env('ENABLE_CALL_WAITER', false) && strlen(env('PUSHER_APP_ID',"")) > 2 && strlen(env('PUSHER_APP_KEY',"")) > 2 && strlen(env('PUSHER_APP_SECRET',"")) > 2)
                     <a type="button" class="nav-link" data-toggle="modal" data-target="#modal-form">
                       <span class="btn-inner--icon">
                         <i class="fa fa-bell"></i>
                       </span>
                       <span class="nav-link-inner--text">{{ __('Call Waiter') }}</span>
                     </a>
-
-                   
-
-               
                   @endif
 
 
@@ -119,6 +118,7 @@
                         <span class="nav-link-inner--text">{{ __('Register visit') }}</span>
                     </a>
                   @endif
+
                   @if(isset($hasGuestOrders)&&$hasGuestOrders)
 
                     <a  href="{{ route('guest.orders')}}" class="nav-link" style="cursor:pointer;">
@@ -129,13 +129,15 @@
                     </a>
                   @endif
                 @endif
+
                 @if(\Request::route()->getName() != "newrestaurant.register" && config('app.ordering'))
                 <a id="mobileCartLink" onclick="openNav()" class="nav-link" style="cursor:pointer;">
                     <i class="fa fa-shopping-cart"></i>
                     <span class="nav-link-inner--text">{{ __('Cart') }}</span>
                 </a>
                 @endif
-              @endif
+                
+              @endisset
 
 
             </li>

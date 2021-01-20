@@ -125,6 +125,7 @@
             var ONESIGNAL_APP_ID = "<?php echo e(env('ONESIGNAL_APP_ID',"")); ?>";
             var USER_ID = '<?php echo e(auth()->user()?auth()->user()->id:""); ?>';
             var PUSHER_APP_KEY = "<?php echo e(env('PUSHER_APP_KEY',"")); ?>";
+            var PUSHER_APP_CLUSTER = "<?php echo e(env('PUSHER_APP_CLUSTER',"")); ?>";
         </script>
 
         <!-- OneSignal -->

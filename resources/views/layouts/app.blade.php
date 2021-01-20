@@ -125,6 +125,7 @@
             var ONESIGNAL_APP_ID = "{{ env('ONESIGNAL_APP_ID',"") }}";
             var USER_ID = '{{  auth()->user()?auth()->user()->id:"" }}';
             var PUSHER_APP_KEY = "{{ env('PUSHER_APP_KEY',"") }}";
+            var PUSHER_APP_CLUSTER = "{{ env('PUSHER_APP_CLUSTER',"") }}";
         </script>
 
         <!-- OneSignal -->

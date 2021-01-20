@@ -20,20 +20,20 @@
                 <i class="ni ni-basket text-success"></i> {{ __('Live Orders') }}<div class="blob red"></div>
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="{{ route('drivers.index') }}">
                 <i class="ni ni-delivery-fast text-pink"></i> {{ __('Drivers') }}
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a class="nav-link" href="{{ route('clients.index') }}">
-                <i class="ni ni-single-02 text-blue"></i> {{ __('Clients') }}
+                <i class="ni ni-single-02 text-blue"></i> {{ __('Users') }}
             </a>
         </li>
         @endif
         <li class="nav-item">
             <a class="nav-link" href="{{ route('admin.restaurants.index') }}">
-                <i class="ni ni-shop text-info"></i> {{ __('Restaurants') }}
+                <i class="ni ni-shop text-info"></i> {{ __('Chefs') }}
             </a>
         </li>
         @if(config('app.isft'))
@@ -50,11 +50,11 @@
             </a>
         </li>
         @endif
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" href="{{ route('pages.index') }}">
                 <i class="ni ni-ungroup text-info"></i> {{ __('Pages') }}
             </a>
-        </li>
+        </li> -->
         @if(env('ENABLE_PRICING',false))
         <li class="nav-item">
             <a class="nav-link" href="{{ route('plans.index') }}">
@@ -65,7 +65,7 @@
         @if(config('app.ordering')&&env('ENABLE_FINANCES_ADMIN',true))
         <li class="nav-item">
             <a class="nav-link" href="{{ route('finances.admin') }}">
-                <i class="ni ni-money-coins text-blue"></i> {{ __('Finances') }}
+                <i class="ni ni-money-coins text-blue"></i> {{ __('Revenue') }}
             </a>
         </li>
         @endif
@@ -78,7 +78,7 @@
          </li>
          @endif
         @if(config('app.isqrsaas'))
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <?php
                 $theLocaleToOpen=strtolower(env('APP_LOCALE',"EN"));
                 if( strtolower(session('applocale_change')).""!=""){
@@ -88,13 +88,13 @@
             <a class="nav-link" target="_blank" href="{{ url('/admin/languages')."/".$theLocaleToOpen."/translations".(config('app.isqrsaas')?"?group=qrlanding":"") }}">
                 <i class="ni ni-world text-orange"></i>{{ __('Translations') }}
             </a>
-        </li>
+        </li> -->
         @else
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a class="nav-link" target="_blank" href="{{ url('/admin/languages')."/".strtolower(env('APP_LOCALE',"EN"))."/translations" }}">
                 <i class="ni ni-world text-orange"></i> {{ __('Translations') }}
             </a>
-        </li>
+        </li> -->
         @endif
         <li class="nav-item">
             <a class="nav-link" href="{{ route('settings.index') }}">

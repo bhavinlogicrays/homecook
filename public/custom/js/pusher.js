@@ -9,7 +9,7 @@ $(document).ready(function() {
         Pusher.logToConsole = true;
 
         var pusher = new Pusher(PUSHER_APP_KEY, {
-            cluster: 'eu'
+            cluster: PUSHER_APP_CLUSTER
         });
 
         var channel = pusher.subscribe('user.'+USER_ID);

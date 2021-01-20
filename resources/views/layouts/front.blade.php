@@ -129,6 +129,7 @@ Coded by www.creative-tim.com
         var CASHIER_CURRENCY = "<?php echo  env('CASHIER_CURRENCY','usd') ?>";
         var USER_ID = '{{  auth()->user()?auth()->user()->id:"" }}';
         var PUSHER_APP_KEY = "{{ env('PUSHER_APP_KEY',"") }}";
+        var PUSHER_APP_CLUSTER = "{{ env('PUSHER_APP_CLUSTER',"") }}";
     </script>
     <script src="{{ asset('custom') }}/js/cartFunctions.js"></script>
 
