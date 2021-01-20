@@ -19,14 +19,14 @@
                 <div class="card bg-secondary shadow">
                     <div class="card-header bg-white border-0">
                         <div class="row align-items-center">
-                            <h3 class="col-12 mb-0">{{ __('Register your restaurant') }}</h3>
+                            <h3 class="col-12 mb-0">{{ __('Register Chef') }}</h3>
                         </div>
                     </div>
                     <div class="card-body">
                         <form  id="registerform" method="post" action="{{ route('newrestaurant.store') }}" autocomplete="off">
                             @csrf
 
-                            <h6 class="heading-small text-muted mb-4">{{ __('Restaurant information') }}</h6>
+                            <h6 class="heading-small text-muted mb-4">{{ __('Chef information') }}</h6>
 
                             @if (session('status'))
                                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -38,7 +38,7 @@
                             @endif
                             <div class="pl-lg-4">
                                 <div class="form-group{{ $errors->has('name') ? ' has-danger' : '' }}">
-                                    <label class="form-control-label" for="name">{{ __('Restaurant Name') }}</label>
+                                    <label class="form-control-label" for="name">{{ __('Chef Name') }}</label>
                                     <input type="text" name="name" id="name" class="form-control form-control-alternative{{ $errors->has('name') ? ' is-invalid' : '' }}" placeholder="{{ __('Restaurant Name here') }} ..." value="{{ isset($_GET["name"])?$_GET['name']:""}}" required autofocus>
                                     @if ($errors->has('name'))
                                         <span class="invalid-feedback" role="alert">

@@ -1,7 +1,7 @@
-@extends('layouts.app', ['title' => __('Clients Management')])
+@extends('layouts.app', ['title' => __('Users Management')])
 
 @section('content')
-    @include('drivers.partials.header', ['title' => __('Edit Client')])
+    @include('drivers.partials.header', ['title' => __('Edit User')])
 
     <div class="container-fluid mt--7">
         <div class="row">
@@ -10,7 +10,7 @@
                     <div class="card-header bg-white border-0">
                         <div class="row align-items-center">
                             <div class="col-8">
-                                <h3 class="mb-0">{{ __('Client Management') }}</h3>
+                                <h3 class="mb-0">{{ __('User Management') }}</h3>
                             </div>
                             <div class="col-4 text-right">
                                 <a href="{{ route('clients.index') }}" class="btn btn-sm btn-primary">{{ __('Back to list') }}</a>
@@ -28,23 +28,23 @@
 
 
                                 <hr />
-                                <h6 class="heading-small text-muted mb-4">{{ __('Client information') }}</h6>
+                                <h6 class="heading-small text-muted mb-4">{{ __('User information') }}</h6>
                             <div class="pl-lg-4">
 
 
                                 <div class="form-group{{ $errors->has('name_client') ? ' has-danger' : '' }}">
-                                    <label class="form-control-label" for="name_client">{{ __('Client Name') }}</label>
-                                    <input type="text" name="name_client" id="name_client" class="form-control form-control-alternative" placeholder="{{ __('Client Name') }}" value="{{ old('name', $client->name) }}" readonly>
+                                    <label class="form-control-label" for="name_client">{{ __('User Name') }}</label>
+                                    <input type="text" name="name_client" id="name_client" class="form-control form-control-alternative" placeholder="{{ __('User Name') }}" value="{{ old('name', $client->name) }}" readonly>
                                 </div>
 
                                 <div class="form-group{{ $errors->has('email_client') ? ' has-danger' : '' }}">
-                                    <label class="form-control-label" for="email_client">{{ __('Client Email') }}</label>
-                                    <input type="text" name="email_client" id="email_client" class="form-control form-control-alternative" placeholder="{{ __('Client Email') }}" value="{{ old('name', $client->email) }}" readonly>
+                                    <label class="form-control-label" for="email_client">{{ __('User Email') }}</label>
+                                    <input type="text" name="email_client" id="email_client" class="form-control form-control-alternative" placeholder="{{ __('User Email') }}" value="{{ old('name', $client->email) }}" readonly>
                                 </div>
 
                                 <div class="form-group{{ $errors->has('phone_client') ? ' has-danger' : '' }}">
-                                    <label class="form-control-label" for="phone_client">{{ __('Client Phone') }}</label>
-                                    <input type="text" name="phone_client" id="phone_client" class="form-control form-control-alternative" placeholder="{{ __('Client Phone') }}" value="{{ old('name', $client->phone) }}" readonly>
+                                    <label class="form-control-label" for="phone_client">{{ __('User Phone') }}</label>
+                                    <input type="text" name="phone_client" id="phone_client" class="form-control form-control-alternative" placeholder="{{ __('User Phone') }}" value="{{ old('name', $client->phone) }}" readonly>
                                 </div>
                             </div>
                     </div>

@@ -133,11 +133,11 @@
                         @endif
                     </div>
                     @if(config('app.isft'))
-                        <div class="col-6 text-right">
+                        <!-- <div class="col-6 text-right">
                             <a href="{{ route('register') }}" class="text-light">
                                 <small>{{ __('Create new account') }}</small>
                             </a>
-                        </div>
+                        </div> -->
                     @endif
                 </div>
             </div>

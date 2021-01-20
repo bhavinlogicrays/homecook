@@ -1,6 +1,6 @@
 <div class="card card-profile shadow">
     <div class="card-header">
-        <h5 class="h3 mb-0">{{ __("Restaurant Location")}}</h5>
+        <h5 class="h3 mb-0">{{ __("Chef Location")}}</h5>
     </div>
     <div class="card-body">
         <div class="nav-wrapper">

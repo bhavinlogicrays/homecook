@@ -98,6 +98,9 @@ class FrontEndController extends Controller
 
     public function index(){
 
+        // disable homepage, redirect to login
+        return redirect()->route('login');
+
         $hasQuery = \Request::has('q')&&strlen(\Request::input('q'))>1;
         $hasLocation = \Request::has('location')&&strlen(\Request::input('location'))>1;
 

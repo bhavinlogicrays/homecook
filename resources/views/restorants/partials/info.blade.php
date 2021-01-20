@@ -4,10 +4,10 @@
         @method('put')
         <input type="hidden" id="rid" value="{{ $restorant->id }}"/>
         @include('partials.fields',['fields'=>[
-            ['ftype'=>'input','name'=>"Restaurant Name",'id'=>"name",'placeholder'=>"Restaurant Name",'required'=>true,'value'=>$restorant->name],
-            ['ftype'=>'input','name'=>"Restaurant Description",'id'=>"description",'placeholder'=>"Restaurant description",'required'=>true,'value'=>$restorant->description],
-            ['ftype'=>'input','name'=>"Restaurant Address",'id'=>"address",'placeholder'=>"Restaurant description",'required'=>true,'value'=>$restorant->address],
-            ['ftype'=>'input','name'=>"Restaurant Phone",'id'=>"phone",'placeholder'=>"Restaurant phone",'required'=>true,'value'=>env('IS_WHATSAPP_ORDERING_MODE',false) ? $restorant->whatsapp_phone : $restorant->phone],
+            ['ftype'=>'input','name'=>"Chef Name",'id'=>"name",'placeholder'=>"Chef Name",'required'=>true,'value'=>$restorant->name],
+            ['ftype'=>'input','name'=>"Chef Description",'id'=>"description",'placeholder'=>"Chef description",'required'=>true,'value'=>$restorant->description],
+            ['ftype'=>'input','name'=>"Chef Address",'id'=>"address",'placeholder'=>"Chef description",'required'=>true,'value'=>$restorant->address],
+            ['ftype'=>'input','name'=>"Chef Phone",'id'=>"phone",'placeholder'=>"Chef phone",'required'=>true,'value'=>env('IS_WHATSAPP_ORDERING_MODE',false) ? $restorant->whatsapp_phone : $restorant->phone],
         ]])
         @if(env('MULTI_CITY',false))
             @include('partials.fields',['fields'=>[
@@ -73,8 +73,8 @@
         <div class="row">
             <?php
                 $images=[
-                    ['name'=>'resto_logo','label'=>__('Restaurant Image'),'value'=>$restorant->logom,'style'=>'width: 295px; height: 200px;'],
-                    ['name'=>'resto_cover','label'=>__('Restaurant Cover Image'),'value'=>$restorant->coverm,'style'=>'width: 200px; height: 100px;']
+                    ['name'=>'resto_logo','label'=>__('Chef Image'),'value'=>$restorant->logom,'style'=>'width: 295px; height: 200px;'],
+                    ['name'=>'resto_cover','label'=>__('Chef Cover Image'),'value'=>$restorant->coverm,'style'=>'width: 200px; height: 100px;']
                 ]
             ?>
             @foreach ($images as $image)

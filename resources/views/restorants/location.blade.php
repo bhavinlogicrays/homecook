@@ -1,4 +1,4 @@
-@extends('layouts.front', ['title' => __('Restaurants')])
+@extends('layouts.front', ['title' => __('Chef')])
 
 @section('content')
 <div class="section section-hero section-shaped">

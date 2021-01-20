@@ -132,11 +132,11 @@
                         <?php endif; ?>
                     </div>
                     <?php if(config('app.isft')): ?>
-                        <div class="col-6 text-right">
+                        <!-- <div class="col-6 text-right">
                             <a href="<?php echo e(route('register')); ?>" class="text-light">
                                 <small><?php echo e(__('Create new account')); ?></small>
                             </a>
-                        </div>
+                        </div> -->
                     <?php endif; ?>
                 </div>
             </div>
