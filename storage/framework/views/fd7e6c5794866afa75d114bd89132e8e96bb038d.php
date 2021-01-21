@@ -8,7 +8,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Orders')); ?> ( 30 <?php echo e(__('days')); ?> )</h5>
+                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Total Completed Orders')); ?> ( 30 <?php echo e(__('days')); ?> )</h5>
                                     <span class="h2 font-weight-bold mb-0"><?php echo e($last30daysOrders); ?></span>
                                 </div>
                                 <div class="col-auto">
@@ -26,7 +26,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Sales Volume')); ?> ( 30 <?php echo e(__('days')); ?> )</h5>
+                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Total Revenue')); ?> ( 30 <?php echo e(__('days')); ?> )</h5>
                                     <span class="h2 font-weight-bold mb-0"> <?php echo money($last30daysOrdersValue, env('CASHIER_CURRENCY','usd'),env('DO_CONVERTION',true)); ?></span>
                                 </div>
                                 <div class="col-auto">
@@ -45,8 +45,8 @@
                             <?php if(auth()->check() && auth()->user()->hasRole('admin')): ?>
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Number of restaurants')); ?></h5>
-                                        <span class="h2 font-weight-bold mb-0"><?php echo e($countItems); ?> <?php echo e(__('restaurants')); ?></span>
+                                        <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Number of CHEFS')); ?></h5>
+                                        <span class="h2 font-weight-bold mb-0"><?php echo e($countItems); ?> <?php echo e(__('CHEFS')); ?></span>
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -78,8 +78,8 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Views')); ?></h5>
-                                    <span class="h2 font-weight-bold mb-0"><?php echo e($allViews); ?> <?php echo e(__('views')); ?></span>
+                                    <h5 class="card-title text-uppercase text-muted mb-0"><?php echo e(__('Total CUSTOMERS')); ?></h5>
+                                    <span class="h2 font-weight-bold mb-0"><?php echo e($allViews); ?> <?php echo e(__('Total CUSTOMERS')); ?></span>
                                 </div>
                                 <div class="col-auto">
                                     <div class="icon icon-shape bg-info text-white rounded-circle shadow">

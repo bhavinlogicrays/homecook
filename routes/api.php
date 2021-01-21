@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
+    Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -39,8 +39,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/user/data', 'ClientController@getUseData')->name('user.getData');
 });
 
-//Driver
+//Chef
 Route::post('/drivergettoken', 'DriverController@getToken')->name('driver.getToken');
+Route::post('/driver/register', 'DriverController@register')->name('client.register');
 
 //Client
 Route::post('/clientgettoken', 'ClientController@getToken')->name('client.getToken');
@@ -54,9 +55,12 @@ Route::get('/restorant/{id}/items', 'ClientController@getRestorantItems')->name(
 Route::get('/restaurant/{restorants}/hours', 'CartController@getRestorantHours')->name('restorant.hours');
 Route::get('/deliveryfee/{res}/{adr}', 'SettingsController@getDeliveryFee')->name('delivery.fee');
 
-
 Route::post('/app/settings','ClientController@getSettings')->name('app.settings');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
+
+
+
+
 

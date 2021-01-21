@@ -8,7 +8,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Orders') }} ( 30 {{ __('days') }} )</h5>
+                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Total Completed Orders') }} ( 30 {{ __('days') }} )</h5>
                                     <span class="h2 font-weight-bold mb-0">{{ $last30daysOrders }}</span>
                                 </div>
                                 <div class="col-auto">
@@ -26,7 +26,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Sales Volume') }} ( 30 {{ __('days') }} )</h5>
+                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Total Revenue') }} ( 30 {{ __('days') }} )</h5>
                                     <span class="h2 font-weight-bold mb-0"> @money( $last30daysOrdersValue, env('CASHIER_CURRENCY','usd'),env('DO_CONVERTION',true))</span>
                                 </div>
                                 <div class="col-auto">
@@ -45,8 +45,8 @@
                             @hasrole('admin')
                                 <div class="row">
                                     <div class="col">
-                                        <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Number of restaurants') }}</h5>
-                                        <span class="h2 font-weight-bold mb-0">{{ $countItems }} {{ __('restaurants') }}</span>
+                                        <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Number of CHEFS') }}</h5>
+                                        <span class="h2 font-weight-bold mb-0">{{ $countItems }} {{ __('CHEFS') }}</span>
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -78,8 +78,8 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Views') }}</h5>
-                                    <span class="h2 font-weight-bold mb-0">{{ $allViews }} {{ __('views') }}</span>
+                                    <h5 class="card-title text-uppercase text-muted mb-0">{{ __('Total CUSTOMERS') }}</h5>
+                                    <span class="h2 font-weight-bold mb-0">{{ $allViews }} {{ __('Total CUSTOMERS') }}</span>
                                 </div>
                                 <div class="col-auto">
                                     <div class="icon icon-shape bg-info text-white rounded-circle shadow">

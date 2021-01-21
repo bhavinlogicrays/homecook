@@ -198,6 +198,7 @@ class DriverController extends Controller
         return redirect()->back()->withStatus(__('notications.thanks_andcheckemail'));
     }
 
+    // This is a Chef Login 
     public function getToken(Request $request){
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
         if($user != null){
@@ -408,4 +409,6 @@ class DriverController extends Controller
             ]);
         }
     }
+
+    
 }
