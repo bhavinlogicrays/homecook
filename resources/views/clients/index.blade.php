@@ -11,7 +11,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col-12">
-                                <h3 class="mb-0">{{ __('Users') }}</h3>
+                                <h3 class="mb-0">{{ __('Customers') }}</h3>
                             </div>
                         </div>
                     </div>
@@ -25,8 +25,8 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">{{ __('Name') }}</th>
-                                    <th scope="col">{{ __('User') }}</th>
-                                    <th scope="col">{{ __('User email') }}</th>
+                                    <th scope="col">{{ __('Customer') }}</th>
+                                    <th scope="col">{{ __('Customer email') }}</th>
                                     <th scope="col">{{ __('Creation Date') }}</th>
                                     @if(env('ENABLE_BIRTH_DATE_ON_REGISTER',false))
                                         <th scope="col">{{ __('Birth Date') }}</th>

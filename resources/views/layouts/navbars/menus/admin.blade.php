@@ -27,7 +27,7 @@
         </li> -->
         <li class="nav-item">
             <a class="nav-link" href="{{ route('clients.index') }}">
-                <i class="ni ni-single-02 text-blue"></i> {{ __('Users') }}
+                <i class="ni ni-single-02 text-blue"></i> {{ __('Customers') }}
             </a>
         </li>
         @endif

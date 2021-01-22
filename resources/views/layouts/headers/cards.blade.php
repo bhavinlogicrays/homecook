@@ -96,6 +96,7 @@
             <br/>
             @hasrole('admin')
             @if(config('app.isft'))
+            <?php /*
             <div class="row">
                 <div class="col-xl-3 col-lg-6">
                     <div class="card card-stats mb-4 mb-xl-0">
@@ -171,6 +172,7 @@
                     </div>
                 </div>
             </div>
+            */ ?>
             @endif
             @endhasrole
         </div>

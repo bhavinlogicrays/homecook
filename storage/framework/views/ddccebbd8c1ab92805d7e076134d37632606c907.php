@@ -18,8 +18,7 @@
     </div>  
     <?php endif; ?>
     
-    <?php endif; ?>
-            
+    <?php endif; ?>           
 
 
     <div class="container-fluid mt--7">
@@ -30,7 +29,7 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <h6 class="text-uppercase text-light ls-1 mb-1"><?php echo e(__('Overview')); ?></h6>
-                                <h2 class="text-white mb-0"><?php echo e(__('Sales value')); ?></h2>
+                                <h2 class="text-white mb-0"><?php echo e(__('Total Revenue')); ?></h2>
                             </div>
 
                         </div>

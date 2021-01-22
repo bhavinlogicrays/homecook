@@ -30,7 +30,7 @@
         </li> -->
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('clients.index')); ?>">
-                <i class="ni ni-single-02 text-blue"></i> <?php echo e(__('Users')); ?>
+                <i class="ni ni-single-02 text-blue"></i> <?php echo e(__('Customers')); ?>
 
             </a>
         </li>
