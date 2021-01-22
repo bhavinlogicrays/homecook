@@ -42,9 +42,9 @@
                             </div>
                         </div>
                         @hasrole('admin|driver')
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-control-label" for="restorant">{{ __('Filter by Restaurant') }}</label>
+                                    <label class="form-control-label" for="restorant">{{ __('Filter by Chef') }}</label>
                                     <select class="form-control select2" name="restorant_id">
                                         <option disabled selected value> -- {{ __('Select an option') }} -- </option>
                                         @foreach ($restorants as $restorant)
@@ -56,9 +56,9 @@
                         @endhasrole
                         @if (config('app.isft'))
                         @hasrole('admin|owner')
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label class="form-control-label" for="client">{{ __('Filter by Client') }}</label>
+                                <label class="form-control-label" for="client">{{ __('Filter by Customer') }}</label>
 
                                 <select class="form-control select2" id="blabla" name="client_id">
                                     <option disabled selected value> -- {{ __('Select an option') }} -- </option>
@@ -69,8 +69,11 @@
                             </div>
                         </div>
                         @endhasrole
+
                         @hasrole('admin|owner')
-                        <div class="col-md-3">
+                        
+                        <div class="col-md-4">
+                            <?php /*
                             <div class="form-group">
                                 <label class="form-control-label" for="driver">{{ __('Filter by Driver') }}</label>
                                 <select class="form-control select2" name="driver_id">
@@ -80,7 +83,9 @@
                                     @endforeach
                                 </select>
                             </div>
+                             */?>
                         </div>
+                       
                         @endhasrole    
                         @else
                         @endif

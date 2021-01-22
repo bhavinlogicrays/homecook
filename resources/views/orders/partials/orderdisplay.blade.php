@@ -2,14 +2,14 @@
     <tr>
         <th scope="col">{{ __('ID') }}</th>
         @hasrole('admin|driver')
-            <th scope="col">{{ __('Restaurant') }}</th>
+            <th scope="col">{{ __('Chef') }}</th>
         @endhasrole
         <th class="table-web" scope="col">{{ __('Created') }}</th>
         <th class="table-web" scope="col">{{ __('Time Slot') }}</th>
         <th class="table-web" scope="col">{{ __('Method') }}</th>
         <th scope="col">{{ __('Last status') }}</th>
         @hasrole('admin|owner|driver')
-            <th class="table-web" scope="col">{{ __('Client') }}</th>
+            <th class="table-web" scope="col">{{ __('Customer') }}</th>
         @endhasrole
         @role('admin')
             <th class="table-web" scope="col">{{ __('Address') }}</th>
@@ -18,7 +18,9 @@
             <th class="table-web" scope="col">{{ __('Items') }}</th>
         @endrole
         @hasrole('admin|owner')
+        <?php /*
             <th class="table-web" scope="col">{{ __('Driver') }}</th>
+            */ ?>
         @endhasrole
         <th class="table-web" scope="col">{{ __('Price') }}</th>
         <th class="table-web" scope="col">{{ __('Delivery') }}</th>
@@ -80,9 +82,11 @@
         </td>
     @endrole
     @hasrole('admin|owner')
+        <?php /*
         <td class="table-web">
             {{ !empty($order->driver->name) ? $order->driver->name : "" }}
         </td>
+        */ ?>
     @endhasrole
     <td class="table-web">
         @money( $order->order_price, env('CASHIER_CURRENCY','usd'),env('DO_CONVERTION',true))
