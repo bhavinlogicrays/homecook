@@ -8,15 +8,18 @@
 
     <?php if(auth()->check() && auth()->user()->hasRole('admin')): ?>
     <?php if(config('app.isft')): ?>
+    <?php /*
     <div class="container-fluid mt--7 mb-8">
         <div class="row">
             <div class="col-xl-12">
-                <?php echo $__env->make('drivers.map', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                @include('drivers.map')
             </div>
             
         </div>
     </div>  
+    */ ?>
     <?php endif; ?>
+
     
     <?php endif; ?>           
 

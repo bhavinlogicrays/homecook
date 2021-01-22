@@ -8,6 +8,7 @@
 
     @hasrole('admin')
     @if (config('app.isft'))
+    <?php /*
     <div class="container-fluid mt--7 mb-8">
         <div class="row">
             <div class="col-xl-12">
@@ -16,7 +17,9 @@
             
         </div>
     </div>  
+    */ ?>
     @endif
+
     
     @endhasrole           
 

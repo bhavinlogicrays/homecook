@@ -96,9 +96,11 @@
             </a>
         </li> -->
         @endif
+        <!--
         <li class="nav-item">
             <a class="nav-link" href="{{ route('settings.index') }}">
                 <i class="ni ni-settings text-black"></i> {{ __('Site Settings ') }}
             </a>
         </li>
+        -->
 </ul>

@@ -109,11 +109,13 @@
             </a>
         </li> -->
         <?php endif; ?>
+        <!--
         <li class="nav-item">
             <a class="nav-link" href="<?php echo e(route('settings.index')); ?>">
                 <i class="ni ni-settings text-black"></i> <?php echo e(__('Site Settings ')); ?>
 
             </a>
         </li>
+        -->
 </ul>
 <?php /**PATH /var/www/html/homecook/resources/views/layouts/navbars/menus/admin.blade.php ENDPATH**/ ?>
