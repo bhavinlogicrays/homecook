@@ -34,6 +34,7 @@ return array(
     'App\\Http\\Controllers\\CKEditorController' => $baseDir . '/app/Http/Controllers/CKEditorController.php',
     'App\\Http\\Controllers\\CartController' => $baseDir . '/app/Http/Controllers/CartController.php',
     'App\\Http\\Controllers\\CategoriesController' => $baseDir . '/app/Http/Controllers/CategoriesController.php',
+    'App\\Http\\Controllers\\ChefController' => $baseDir . '/app/Http/Controllers/ChefController.php',
     'App\\Http\\Controllers\\CitiesController' => $baseDir . '/app/Http/Controllers/CitiesController.php',
     'App\\Http\\Controllers\\ClientController' => $baseDir . '/app/Http/Controllers/ClientController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',

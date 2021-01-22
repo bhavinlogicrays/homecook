@@ -862,6 +862,7 @@ class ComposerStaticInit8fb82e94d3634c51c3b9525a01d18752
         'App\\Http\\Controllers\\CKEditorController' => __DIR__ . '/../..' . '/app/Http/Controllers/CKEditorController.php',
         'App\\Http\\Controllers\\CartController' => __DIR__ . '/../..' . '/app/Http/Controllers/CartController.php',
         'App\\Http\\Controllers\\CategoriesController' => __DIR__ . '/../..' . '/app/Http/Controllers/CategoriesController.php',
+        'App\\Http\\Controllers\\ChefController' => __DIR__ . '/../..' . '/app/Http/Controllers/ChefController.php',
         'App\\Http\\Controllers\\CitiesController' => __DIR__ . '/../..' . '/app/Http/Controllers/CitiesController.php',
         'App\\Http\\Controllers\\ClientController' => __DIR__ . '/../..' . '/app/Http/Controllers/ClientController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',

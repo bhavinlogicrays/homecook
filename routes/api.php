@@ -60,7 +60,6 @@ Route::post('/app/settings','ClientController@getSettings')->name('app.settings'
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
 
+Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 
-
-
-
+// Route::post('/client/forgotverificationcode', 'clientcontroller@forgotverificationcode')->name('client.forgotverificationcode')
