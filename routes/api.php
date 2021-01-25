@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-    Route::middleware('auth:api')->get('/user', function (Request $request) {
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
@@ -47,6 +47,7 @@ Route::post('/driver/register', 'DriverController@register')->name('client.regis
 Route::post('/clientgettoken', 'ClientController@getToken')->name('client.getToken');
 Route::post('/client/register', 'ClientController@register')->name('client.register');
 Route::post('/client/forgot', 'ClientController@forgot')->name('client.forgot');
+Route::post('/client/forgotverificationcode', 'ClientController@forgotverificationcode')->name('client.forgotverificationcode');
 Route::post('/client/loginfb','ClientController@loginFacebook');
 Route::post('/client/logingoogle','ClientController@loginGoogle');
 Route::get('/restorantslist/{city_id}', 'ClientController@getRestorants')->name('restorants.list');
@@ -57,9 +58,11 @@ Route::get('/deliveryfee/{res}/{adr}', 'SettingsController@getDeliveryFee')->nam
 
 Route::post('/app/settings','ClientController@getSettings')->name('app.settings');
 
+Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
 
-Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 
-// Route::post('/client/forgotverificationcode', 'clientcontroller@forgotverificationcode')->name('client.forgotverificationcode')
+
+
+

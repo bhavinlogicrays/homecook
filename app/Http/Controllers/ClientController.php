@@ -661,4 +661,83 @@ class ClientController extends Controller
             ]);
         }
     }
+
+    public function forgot(Request $request)
+    {
+        $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        if($user != null){
+            // send email
+            try{
+                $randomOTPNumber = mt_rand(1000,9999);
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['verification_code' => $randomOTPNumber]);
+
+                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
+                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
+                $headers .= "MIME-Version: 1.0\r\n";
+                $headers = "Content-Type: text/html; charset=UTF-8";
+                   
+                $subject = "HomeCook Forgot Password OTP";
+                $msg  = "<p>Hello " . $user->name . ",</p>";
+                $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
+                $msg .= "<p>Thanks & Regards,</p>";
+                $msg .= "Team HomeCook";
+                mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+
+                return response()->json([
+                    'status' => true,
+                    'succMsg' => 'Sent OTP into your email ' . $request->email
+                ]);
+
+            } catch(Exceptions $e) {
+                // error_log($e);
+                $subject = "Error In HomeCook Forgot Password OTP";
+                $fourRandomDigit = mt_rand(1000,9999);
+                $msg = $e;
+                mail("lr.testdemo@gmail.com", $subject, $msg);
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => 'We are sorry for server issue, Please wait for sometime and send forgot password OTP again'
+                ]);
+            }            
+
+            exit();
+        }else{
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'User not found. Incorrect email!'
+            ]);
+        }
+    }
+
+    public function forgotverificationcode(Request $request)
+    {
+
+            // OTP verified successfully
+                return response()->json([
+                    'status' => true,
+                    'succMsg' => 'Sent OTP into your email ' . $request->email
+                ]);
+            exit();
+
+
+        $user = User::where(['email'=>$request->email])->first();
+        
+        if($user != null){
+                // OTP verified successfully
+                return response()->json([
+                    'status' => true,
+                    'succMsg' => 'Sent OTP into your email ' . $request->email
+                ]);
+            exit();
+        }else{
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Forgot password OTP not matched!'
+            ]);
+        }
+    }
+
+
 }
