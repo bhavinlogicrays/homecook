@@ -712,7 +712,7 @@ class ClientController extends Controller
         }
     }
 
-    public function forgotverificationcode(Request $request)
+    public function verificationcode(Request $request)
     {
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         

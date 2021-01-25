@@ -47,7 +47,7 @@ Route::post('/driver/register', 'DriverController@register')->name('client.regis
 Route::post('/clientgettoken', 'ClientController@getToken')->name('client.getToken');
 Route::post('/client/register', 'ClientController@register')->name('client.register');
 Route::post('/client/forgot', 'ClientController@forgot')->name('client.forgot');
-Route::post('/client/forgotverificationcode', 'ClientController@forgotverificationcode')->name('client.forgotverificationcode');
+Route::post('/verificationcode', 'ClientController@verificationcode')->name('client.verificationcode');
 Route::post('/client/loginfb','ClientController@loginFacebook');
 Route::post('/client/logingoogle','ClientController@loginGoogle');
 Route::get('/restorantslist/{city_id}', 'ClientController@getRestorants')->name('restorants.list');
