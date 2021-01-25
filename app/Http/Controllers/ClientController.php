@@ -665,6 +665,7 @@ class ClientController extends Controller
     public function forgot(Request $request)
     {
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
+
         if($user != null){
             // send email
             try{
@@ -713,22 +714,13 @@ class ClientController extends Controller
 
     public function forgotverificationcode(Request $request)
     {
-
-            // OTP verified successfully
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
-                ]);
-            exit();
-
-
-        $user = User::where(['email'=>$request->email])->first();
+        $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         
         if($user != null){
                 // OTP verified successfully
                 return response()->json([
                     'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
+                    'succMsg' => 'Valid Verification Code OTP for forgotpassword' 
                 ]);
             exit();
         }else{
