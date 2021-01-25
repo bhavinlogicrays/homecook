@@ -12,6 +12,8 @@ use App\Order;
 use App\Address;
 use App\Items;
 use App\Status;
+use App\Hours;
+use App\City;
 use Cart;
 use Auth;
 use Illuminate\Support\Str;
@@ -25,7 +27,7 @@ use Stripe\Charge;
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
 use App\Notifications\OrderNotification;
 
-class ClientController extends Controller
+class ChefController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -375,28 +377,70 @@ class ClientController extends Controller
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'email', 'unique:users', 'max:255'],
                 'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
-                'password' => ['required', 'string', 'min:8']
+                'password' => ['required', 'string', 'min:6'],
+
+                'city' => ['required', 'string', 'min:2'],
+                'postcode' => ['required', 'integer'],
+                'address' => ['required', 'string', 'min:8'],
+                'service_type' => ['required', 'integer'],
+                
+                'is_cooking_passionate' => ['required', 'integer'],
+                'hours_from' => ['required', 'string'],
+                'hours_to' => ['required', 'string'],
+                // 'certificate' => ['required', 'integer'],
+                
+
             ]);
             //dd($validator->errors()->messages());
 
             if(!$validator->fails()) {
 
-                $client = new User;
+                $chef = new User;
 
-                $client->name = $request->name;
-                $client->email = $request->email;
-                $client->phone = $request->phone;
-                $client->password = Hash::make($request->password);
-                $client->api_token = Str::random(80);
-                $client->save();
+                $chef->name = $request->name;
+                $chef->email = $request->email;
+                $chef->phone = $request->phone;
+                $chef->password = Hash::make($request->password);
+                $chef->api_token = Str::random(80);
+                
 
                 //Assign role
-                $client->assignRole('client');
+                $chef->assignRole('owner');
+
+                $chef->save();
+                // add address
+                $restorant = new Restorant;
+                
+                $restorant->name = $request->name;
+                $restorant->address = $request->address;
+                
+                $restorant->city_id = City::firstOrCreate(['name' => $request->city,
+                'alias' => substr($request->city, 2)
+                ])->id;
+
+                //To:Do add postcode in address table
+                // $restorant->postcode = $request->postcode;
+                    
+                $restorant->user_id = $chef->id;
+                
+                $restorant->can_pickup = $request->service_type;
+                $restorant->can_deliver = !$request->service_type;
+                $restorant->is_cooking_passionate = $request->is_cooking_passionate;
+                $restorant->certificate = $request->certificate;
+
+                $restorant->save();
+
+                $hours = new Hours;
+                $hours['0_from'] = $request->hours_from;
+                $hours['0_to'] = $request->hours_to;
+                $hours->restorant_id = $restorant->id;
+                
+                $hours->save();
 
                 return response()->json([
                     'status' => true,
-                    'token' => $client->api_token,
-                    'id' => $client->id
+                    'token' => $chef->api_token,
+                    'id' => $chef->id
                 ]);
             }else{
                 return response()->json([
@@ -661,83 +705,4 @@ class ClientController extends Controller
             ]);
         }
     }
-
-    public function forgot(Request $request)
-    {
-        $user = User::where(['active'=>1,'email'=>$request->email])->first();
-        if($user != null){
-            // send email
-            try{
-                $randomOTPNumber = mt_rand(1000,9999);
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update(['verification_code' => $randomOTPNumber]);
-
-                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers = "Content-Type: text/html; charset=UTF-8";
-                   
-                $subject = "HomeCook Forgot Password OTP";
-                $msg  = "<p>Hello " . $user->name . ",</p>";
-                $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                $msg .= "<p>Thanks & Regards,</p>";
-                $msg .= "Team HomeCook";
-                mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
-                ]);
-
-            } catch(Exceptions $e) {
-                // error_log($e);
-                $subject = "Error In HomeCook Forgot Password OTP";
-                $fourRandomDigit = mt_rand(1000,9999);
-                $msg = $e;
-                mail("lr.testdemo@gmail.com", $subject, $msg);
-                return response()->json([
-                    'status' => false,
-                    'errMsg' => 'We are sorry for server issue, Please wait for sometime and send forgot password OTP again'
-                ]);
-            }            
-
-            exit();
-        }else{
-            return response()->json([
-                'status' => false,
-                'errMsg' => 'User not found. Incorrect email!'
-            ]);
-        }
-    }
-
-    public function forgotverificationcode(Request $request)
-    {
-
-            // OTP verified successfully
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
-                ]);
-            exit();
-
-
-        $user = User::where(['email'=>$request->email])->first();
-        
-        if($user != null){
-                // OTP verified successfully
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
-                ]);
-            exit();
-        }else{
-            return response()->json([
-                'status' => false,
-                'errMsg' => 'Forgot password OTP not matched!'
-            ]);
-        }
-    }
-
-
 }
