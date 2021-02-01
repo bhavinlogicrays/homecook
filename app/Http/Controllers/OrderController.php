@@ -88,6 +88,7 @@ class OrderController extends Controller
             $orders = $orders->where(['restorant_id'=>auth()->user()->restorant->id]);
         }
 
+
         //FILTER BT RESTORANT
         if(isset($_GET['restorant_id'])){
             $orders =$orders->where(['restorant_id'=>$_GET['restorant_id']]);
@@ -120,6 +121,10 @@ class OrderController extends Controller
             //$end = Carbon::parse($_GET['toDate']);
             $orders =$orders->whereDate('created_at','<=',$_GET['toDate']);
         }
+
+
+        $restorant_id = 1;
+        $orders =$orders->where(['restorant_id'=>$restorant_id])->limit(5);
 
         //With downloaod
         if(isset($_GET['report'])){
@@ -159,15 +164,13 @@ class OrderController extends Controller
 
         $orders = $orders->paginate(10);
 
-
-
         return view('orders.index',[
             'orders' => $orders,
-            'restorants'=>$restorants,
-            'drivers'=>$drivers,
-            'fields'=>[['class'=>'col-12','classselect'=>"noselecttwo", 'ftype'=>'select','name'=>'Driver','id'=>'driver','placeholder'=>'Assign Driver','data'=>$driversData,'required'=>true]],
-            'clients'=>$clients,
-            'parameters'=>count($_GET)!=0
+            'restorants' => $restorants,
+            'drivers' => $drivers,
+            'fields' => [['class'=>'col-12','classselect'=>"noselecttwo", 'ftype'=>'select','name'=>'Driver','id'=>'driver','placeholder'=>'Assign Driver','data'=>$driversData,'required'=>true]],
+            'clients' => $clients,
+            'parameters' => count($_GET)!=0
         ]);
     }
 

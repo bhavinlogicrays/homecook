@@ -777,22 +777,85 @@ class ChefController extends Controller
         }
     }
 
-    public function runningorder(){
+    public function orderlist(Request $request){
 
-        echo 'Runningorder';
-        exit;
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user){
 
-        if($client==null){
+            $orders = Order::orderBy('created_at','desc');
+
+            //$restorant_id = auth()->user()->restorant->id;
+            $restorant_id = 1;
+            $orders =$orders->where(['restorant_id'=>$restorant_id]);
+
+            $dashboardOrderCount = $orders->get()->count();
+
+            switch ($request->order_type) {
+                case 'requested_order':
+                        $alias = 'just_created';
+                    break;
+                case 'ruuning_order':
+                        $alias = 'accepted_by_restaurant';
+                    break;                
+                case 'done_order':
+                        $alias = 'closed';
+                    break;                
+                case 'cancel_order':
+                        $alias = 'rejected_by_restaurant';
+                    break;                
+                default:
+                    $alias = 'just_created';
+                    break;
+            }
+
+            // echo 'order_type = ' . $request->order_type;
+            // echo '<br>';
+            // echo 'alias = ' .  $alias;
+
+            $items=array();
+            foreach ($orders->get() as $key => $order) {
+                if($order->status->pluck('alias')->last() == $alias){
+                        $item=array(
+                            "order_id"=>$order->id,
+                            "chef_name"=>$order->restorant->name,
+                            "chef_id"=>$order->restorant_id,
+                            "created"=>$order->created_at,
+                            "last_status"=>$order->status->pluck('alias')->last(),
+                            "client_name"=>$order->client?$order->client->name:"",
+                            "client_id"=>$order->client?$order->client_id:null,
+                            "table_name"=>$order->table?$order->table->name:"",
+                            "table_id"=>$order->table?$order->table_id:null,
+                            "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
+                            "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
+                            "address"=>$order->address?$order->address->address:"",
+                            "address_id"=>$order->address_id,
+                            //"driver_name"=>$order->driver?$order->driver->name:"",
+                            //"driver_id"=>$order->driver_id,
+                            "order_value"=>$order->order_price,
+                            "order_delivery"=>$order->delivery_price,
+                            "order_total"=>$order->delivery_price+$order->order_price,
+                            'payment_method'=>$order->payment_method,
+                            'srtipe_payment_id'=>$order->srtipe_payment_id,
+                            //'order_fee'=>$order->fee_value,
+                            //'restaurant_fee'=>$order->fee,
+                            //'restaurant_static_fee'=>$order->static_fee,
+                            //'vat'=>$order->vatvalue
+                          );
+                        array_push($items,$item);
+                    }
+            }
+
+            return response()->json([
+                'data' => $items,
+                'dataCount' => count($items),
+                'status' => true,
+                'succMsg' => 'Get all order data successfully'
+            ]);
+        } else {
             return response()->json([
                 'status' => false,
-                'errMsg' => 'Client not found!'
+                'errMsg' => 'Invalid token'
             ]);
         }
-
-        return response()->json([
-            'data' => $client->notifications,
-            'status' => true,
-            'errMsg' => ''
-        ]);
     }
 }
