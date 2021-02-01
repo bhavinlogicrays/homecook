@@ -339,20 +339,24 @@ class ClientController extends Controller
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
         if($user != null){
             if(Hash::check($request->password, $user->password)){
-                if($user->hasRole(['client'])){
+
+                $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
+
+                // if($user->hasRole(['client'])){
                     return response()->json([
                         'status' => true,
                         'token' => $user->api_token,
+                        'is_chef' => $userStatus,
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email
                     ]);
-                }else{
-                    return response()->json([
-                        'status' => false,
-                        'errMsg' => 'User is not a client!'
-                    ]);
-                }
+                // }else{
+                //     return response()->json([
+                //         'status' => false,
+                //         'errMsg' => 'User is not a client!'
+                //     ]);
+                // }
             }else{
                 return response()->json([
                     'status' => false,

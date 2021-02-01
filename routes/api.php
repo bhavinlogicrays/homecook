@@ -44,7 +44,7 @@ Route::post('/drivergettoken', 'DriverController@getToken')->name('driver.getTok
 Route::post('/driver/register', 'DriverController@register')->name('client.register');
 
 // Client
-Route::post('/clientgettoken', 'ClientController@getToken')->name('client.getToken');
+Route::post('/login', 'ClientController@getToken')->name('client.getToken');
 Route::post('/client/register', 'ClientController@register')->name('client.register');
 Route::post('/client/loginfb','ClientController@loginFacebook');
 Route::post('/client/logingoogle','ClientController@loginGoogle');
