@@ -57,7 +57,7 @@ Route::get('/deliveryfee/{res}/{adr}', 'SettingsController@getDeliveryFee')->nam
 Route::post('/app/settings','ClientController@getSettings')->name('app.settings');
 
 // Chef
-Route::post('/client/forgot', 'ClientController@forgot')->name('client.forgot');
+Route::post('/forgot', 'ClientController@forgot')->name('client.forgot');
 Route::post('/verificationcode', 'ClientController@verificationcode')->name('client.verificationcode');
 Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 Route::post('/dashboard/runningorder', 'ChefController@runningorder')->name('chef.runningorder');
