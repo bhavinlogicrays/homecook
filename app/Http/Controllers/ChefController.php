@@ -794,7 +794,7 @@ class ChefController extends Controller
                 case 'requested_order':
                         $alias = 'just_created';
                     break;
-                case 'ruuning_order':
+                case 'runing_order':
                         $alias = 'accepted_by_restaurant';
                     break;                
                 case 'done_order':
