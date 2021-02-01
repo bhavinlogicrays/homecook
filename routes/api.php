@@ -39,15 +39,13 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/user/data', 'ClientController@getUseData')->name('user.getData');
 });
 
-//Chef
+// Driver
 Route::post('/drivergettoken', 'DriverController@getToken')->name('driver.getToken');
 Route::post('/driver/register', 'DriverController@register')->name('client.register');
 
-//Client
+// Client
 Route::post('/clientgettoken', 'ClientController@getToken')->name('client.getToken');
 Route::post('/client/register', 'ClientController@register')->name('client.register');
-Route::post('/client/forgot', 'ClientController@forgot')->name('client.forgot');
-Route::post('/client/forgotverificationcode', 'ClientController@forgotverificationcode')->name('client.forgotverificationcode');
 Route::post('/client/loginfb','ClientController@loginFacebook');
 Route::post('/client/logingoogle','ClientController@loginGoogle');
 Route::get('/restorantslist/{city_id}', 'ClientController@getRestorants')->name('restorants.list');
@@ -58,7 +56,14 @@ Route::get('/deliveryfee/{res}/{adr}', 'SettingsController@getDeliveryFee')->nam
 
 Route::post('/app/settings','ClientController@getSettings')->name('app.settings');
 
+// Chef
+Route::post('/client/forgot', 'ClientController@forgot')->name('client.forgot');
+Route::post('/verificationcode', 'ClientController@verificationcode')->name('client.verificationcode');
 Route::post('/chef/register', 'ChefController@register')->name('chef.register');
+Route::post('/dashboard/runningorder', 'ChefController@runningorder')->name('chef.runningorder');
+// Route::post('/dashboard/runningorder', 'DriverController@register')->name('chef.runningorder');
+
+
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
 

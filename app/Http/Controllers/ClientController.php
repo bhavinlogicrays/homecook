@@ -684,7 +684,8 @@ class ClientController extends Controller
                 $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
                 $msg .= "<p>Thanks & Regards,</p>";
                 $msg .= "Team HomeCook";
-                mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+                mail($request->email, $subject, $msg, $headers);
 
                 return response()->json([
                     'status' => true,
@@ -712,7 +713,7 @@ class ClientController extends Controller
         }
     }
 
-    public function forgotverificationcode(Request $request)
+    public function verificationcode(Request $request)
     {
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         

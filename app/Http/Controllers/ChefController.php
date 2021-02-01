@@ -28,7 +28,10 @@ use Laravel\Cashier\Exceptions\PaymentActionRequired;
 use App\Notifications\OrderNotification;
 
 class ChefController extends Controller
-{
+{   
+
+    protected $imagePath='uploads/restorants/';
+
     /**
      * Display a listing of the resource.
      *
@@ -412,30 +415,98 @@ class ChefController extends Controller
                 $restorant = new Restorant;
                 
                 $restorant->name = $request->name;
+                $restorant->subdomain = $this->makeAlias(strip_tags($request->name));
                 $restorant->address = $request->address;
+                $restorant->phone = $request->phone;
                 
                 $restorant->city_id = City::firstOrCreate(['name' => $request->city,
                 'alias' => substr($request->city, 2)
                 ])->id;
 
-                //To:Do add postcode in address table
-                // $restorant->postcode = $request->postcode;
+                $address = new Address;
+                $address->postcode = $request->postcode;
+                $address->user_id = $chef->id;
+                $address->save();
+
                     
                 $restorant->user_id = $chef->id;
                 
                 $restorant->can_pickup = $request->service_type;
                 $restorant->can_deliver = !$request->service_type;
                 $restorant->is_cooking_passionate = $request->is_cooking_passionate;
-                $restorant->certificate = $request->certificate;
+                
+                if($request->hasFile('certificate')){
+                    $restorant->certificate=$this->saveImageVersions(
+                        $this->imagePath,
+                        $request->certificate,
+                        [
+                            ['name'=>'large','w'=>590,'h'=>400],
+                            ['name'=>'medium','w'=>295,'h'=>200],
+                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                        ]
+                    );
+                }
 
                 $restorant->save();
 
                 $hours = new Hours;
                 $hours['0_from'] = $request->hours_from;
                 $hours['0_to'] = $request->hours_to;
+                $hours['1_from'] = $request->hours_from;
+                $hours['1_to'] = $request->hours_to;
+                $hours['2_from'] = $request->hours_from;
+                $hours['2_to'] = $request->hours_to;
+                $hours['3_from'] = $request->hours_from;
+                $hours['3_to'] = $request->hours_to;
+                $hours['4_from'] = $request->hours_from;
+                $hours['4_to'] = $request->hours_to;
+                $hours['5_from'] = $request->hours_from;
+                $hours['5_to'] = $request->hours_to;
+                $hours['6_from'] = $request->hours_from;
+                $hours['6_to'] = $request->hours_to;
+
                 $hours->restorant_id = $restorant->id;
                 
                 $hours->save();
+
+
+                // send email
+            try{
+                $randomOTPNumber = mt_rand(1000,9999);
+                DB::table('users')
+                    ->where('id', $chef->id)
+                    ->update(['verification_code' => $randomOTPNumber]);
+
+                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
+                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
+                $headers .= "MIME-Version: 1.0\r\n";
+                $headers = "Content-Type: text/html; charset=UTF-8";
+                   
+                $subject = "HomeCook Registration OTP";
+                $msg  = "<p>Hello " . $chef->name . ",</p>";
+                $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
+                $msg .= "<p>Thanks & Regards,</p>";
+                $msg .= "Team HomeCook";
+                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+                mail($request->email, $subject, $msg, $headers);
+
+                return response()->json([
+                    'status' => true,
+                    'succMsg' => 'Sent OTP into your email ' . $request->email
+                ]);
+
+            } catch(Exceptions $e) {
+                // error_log($e);
+                $subject = "Error In HomeCook Registration OTP";
+                $fourRandomDigit = mt_rand(1000,9999);
+                $msg = $e;
+                mail("lr.testdemo@gmail.com", $subject, $msg);
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => 'We are sorry for server issue, Please wait for sometime and
+                     send Registration OTP again'
+                ]);
+            } 
 
                 return response()->json([
                     'status' => true,
@@ -705,4 +776,41 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    public function getMyNotifications(){
+        $client = User::where(['api_token' => $_GET['api_token']])->first();
+
+        if($client==null){
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Client not found!'
+            ]);
+        }
+
+        return response()->json([
+            'data' => $client->notifications,
+            'status' => true,
+            'errMsg' => ''
+        ]);
+    }
+
+    public function runningorder(){
+
+        echo 'Runningorder';
+        exit;
+
+        if($client==null){
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Client not found!'
+            ]);
+        }
+
+        return response()->json([
+            'data' => $client->notifications,
+            'status' => true,
+            'errMsg' => ''
+        ]);
+    }
+
 }
