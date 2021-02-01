@@ -777,24 +777,6 @@ class ChefController extends Controller
         }
     }
 
-
-    public function getMyNotifications(){
-        $client = User::where(['api_token' => $_GET['api_token']])->first();
-
-        if($client==null){
-            return response()->json([
-                'status' => false,
-                'errMsg' => 'Client not found!'
-            ]);
-        }
-
-        return response()->json([
-            'data' => $client->notifications,
-            'status' => true,
-            'errMsg' => ''
-        ]);
-    }
-    
     public function runningorder(){
 
         echo 'Runningorder';
