@@ -779,6 +779,9 @@ class ChefController extends Controller
 
     public function orderlist(Request $request){
 
+        echo 'Check Order list Action';
+        exit;
+
         $user = User::where(['api_token' => $request->api_token])->first();
         if($user){
 
