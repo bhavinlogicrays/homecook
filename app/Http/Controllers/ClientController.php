@@ -336,10 +336,6 @@ class ClientController extends Controller
 
     public function getToken(Request $request)
     {
-        
-        echo 'getToken';
-        exit;
-
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
         if($user != null){
             if(Hash::check($request->password, $user->password)){
