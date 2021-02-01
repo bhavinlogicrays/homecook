@@ -777,7 +777,7 @@ class ChefController extends Controller
         }
     }
 
-    public function orderlist(){
+    public function getorder(){
 
         echo 'Check Order list Action';
         exit;
