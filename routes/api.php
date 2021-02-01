@@ -61,7 +61,7 @@ Route::post('/forgot', 'ClientController@forgot')->name('client.forgot');
 Route::post('/verificationcode', 'ClientController@verificationcode')->name('client.verificationcode');
 Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 
-Route::get('getorder', 'ChefController@getorder')->name('chef.getorder');
+Route::get('/getorder', 'ChefController@getorder')->name('chef.getorder');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
