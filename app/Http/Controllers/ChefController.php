@@ -487,7 +487,8 @@ class ChefController extends Controller
                 $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
                 $msg .= "<p>Thanks & Regards,</p>";
                 $msg .= "Team HomeCook";
-                mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
+                mail($request->email, $subject, $msg, $headers);
 
                 return response()->json([
                     'status' => true,
@@ -776,6 +777,24 @@ class ChefController extends Controller
         }
     }
 
+
+    public function getMyNotifications(){
+        $client = User::where(['api_token' => $_GET['api_token']])->first();
+
+        if($client==null){
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Client not found!'
+            ]);
+        }
+
+        return response()->json([
+            'data' => $client->notifications,
+            'status' => true,
+            'errMsg' => ''
+        ]);
+    }
+    
     public function runningorder(){
 
         echo 'Runningorder';
