@@ -775,4 +775,23 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    public function runningorder(){
+
+        echo 'Runningorder';
+        exit;
+
+        if($client==null){
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Client not found!'
+            ]);
+        }
+
+        return response()->json([
+            'data' => $client->notifications,
+            'status' => true,
+            'errMsg' => ''
+        ]);
+    }
 }
