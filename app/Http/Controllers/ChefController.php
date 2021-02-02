@@ -447,6 +447,18 @@ class ChefController extends Controller
                     );
                 }
 
+                if($request->hasFile('logo')){
+                    $restorant->logo=$this->saveImageVersions(
+                        $this->imagePath,
+                        $request->logo,
+                        [
+                            ['name'=>'large','w'=>590,'h'=>400],
+                            ['name'=>'medium','w'=>295,'h'=>200],
+                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                        ]
+                    );
+                }
+
                 $restorant->save();
 
                 $hours = new Hours;
