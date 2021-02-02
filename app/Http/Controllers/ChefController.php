@@ -777,6 +777,13 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get the list of required orders
+     * Requested Order
+     * Running Order
+     * Done Order
+     * Cancel Order
+     */
     public function orderlist(Request $request){
 
         $user = User::where(['api_token' => $request->api_token])->first();
@@ -787,7 +794,6 @@ class ChefController extends Controller
             //$restorant_id = auth()->user()->restorant->id;
             $restorant_id = 1;
             $orders =$orders->where(['restorant_id'=>$restorant_id]);
-
             $dashboardOrderCount = $orders->get()->count();
 
             switch ($request->order_type) {
@@ -807,10 +813,6 @@ class ChefController extends Controller
                     $alias = 'just_created';
                     break;
             }
-
-            // echo 'order_type = ' . $request->order_type;
-            // echo '<br>';
-            // echo 'alias = ' .  $alias;
 
             $items=array();
             foreach ($orders->get() as $key => $order) {
@@ -858,4 +860,58 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    /**
+     * This is use change the status of order
+     * Chef will change the status of order
+     * Accepted order
+     * Done Order
+     * Cancel Order
+     */
+    public function changeorderstatus(Request $request){
+
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user){
+
+            switch ($request->order_status) {
+                case 'accept':
+                        $alias = 'accepted_by_restaurant';
+                    break;
+                case 'done':
+                        $alias = 'closed';
+                    break;                
+                case 'cancel':
+                        $alias = 'rejected_by_restaurant';
+                    break;                
+                default:
+                    $alias = 'just_created';
+                    break;
+            }
+
+            $status = Status::select('id', 'alias')->where(['alias' => $alias])->get()->first();
+            
+            if(!empty($status)){
+                DB::table('order_has_status')
+                        ->where(['order_id' => $request->order_id, 'user_id' => $user->id])
+                        ->update(['status_id' => $status->id]);
+                
+                return response()->json([
+                    'status' => true,
+                    'succMsg' => 'Order status change successfully'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'succMsg' => 'Order not found for this user'
+                ]);
+            }
+
+        } else {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
 }

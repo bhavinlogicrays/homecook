@@ -62,6 +62,7 @@ Route::post('/verificationcode', 'ClientController@verificationcode')->name('cli
 Route::post('/chef/register', 'ChefController@register')->name('chef.register');
 
 Route::post('/orderlist', 'ChefController@orderlist')->name('chef.orderlist');
+Route::post('/changeorderstatus', 'ChefController@changeorderstatus')->name('chef.changeorderstatus');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
