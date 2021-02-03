@@ -802,7 +802,7 @@ class ChefController extends Controller
             $orders = Order::orderBy('created_at','desc');
 
             //$restorant_id = auth()->user()->restorant->id;
-            $restorantId = 1; //$user->id;
+            $restorantId = $request->restorant_id;
             $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
