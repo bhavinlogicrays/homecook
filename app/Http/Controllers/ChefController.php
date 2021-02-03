@@ -802,7 +802,7 @@ class ChefController extends Controller
             $orders = Order::orderBy('created_at','desc');
 
             //$restorant_id = auth()->user()->restorant->id;
-            $restorantId = $user->id;
+            $restorantId = 1; //$user->id;
             $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
@@ -940,7 +940,6 @@ class ChefController extends Controller
             ]);
 
         //$user = User::where(['api_token' => $request->api_token])->first();
-
         if($user){
 
             return response()->json([
