@@ -803,10 +803,6 @@ class ChefController extends Controller
 
             //$restorant_id = auth()->user()->restorant->id;
             $restorantId = $user->id;
-
-            echo 'restorantId = ' . $restorantId;
-            exit;
-
             $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
