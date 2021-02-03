@@ -802,7 +802,7 @@ class ChefController extends Controller
             $orders = Order::orderBy('created_at','desc');
 
             //$restorant_id = auth()->user()->restorant->id;
-            $restorantId = $request->restorant_id;
+            $restorantId = $user->id;
             $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
@@ -925,29 +925,40 @@ class ChefController extends Controller
         }
     }
 
-    /**
-     * This is use for display chef dashboard view
-     * 
-     */
-    public function chefdashboardview(Request $request){
+     public function chefdashboardview(Request $request){
+        $user = User::where(['api_token' => $request->api_token])->first();
+        
+        if($user)
+        {
+            $user_id = $user->id;
+            $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
+            $total_revenue = number_format(0, 2);
+            if($revenue)
+            {
+                $total_revenue = number_format($revenue[0]->revenue, 2);
+            }
+            //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%H%A') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY) GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
 
-        $user = DB::select("SELECT * from users");
+            $reviews = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
+            $review_data['rating_average'] = $reviews[0]->rating_average;
+            $review_data['rating_count'] = $reviews[0]->rating_count;
 
-        return response()->json([
-                'status' => true,
-                'data' => $user,
-                'succMsg' => 'Order status change successfully'
-            ]);
+            //  AND o.created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
+            $popular_items = DB::select("SELECT SUM(ohi.qty) sale_count, i.id, i.image, i.name, i.price, i.vat FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id ORDER BY SUM(ohi.qty) DESC");
 
-        //$user = User::where(['api_token' => $request->api_token])->first();
-        if($user){
-
+            $data['total_revenue'] = $total_revenue;
+            $data['revenue_list'] = $revenue_list;
+            $data['reviews'] = $review_data;
+            $data['popular_items'] = $popular_items;
             return response()->json([
                 'status' => true,
+                'data' => $data,
                 'succMsg' => 'Order status change successfully'
             ]);
-            
-        } else {
+        }
+        else
+        {
             return response()->json([
                 'status' => false,
                 'errMsg' => 'Invalid token'
