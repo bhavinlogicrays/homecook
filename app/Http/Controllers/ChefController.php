@@ -799,67 +799,66 @@ class ChefController extends Controller
         $user = User::where(['api_token' => $request->api_token])->first();
         if($user){
 
-            $orders = Order::orderBy('created_at','desc');
-
-            //$restorant_id = auth()->user()->restorant->id;
             $restorantId = $user->id;
-            
-            echo 'restorantId = ' . $restorantId;
-            exit();
 
-            $orders =$orders->where(['restorant_id' => $restorantId]);
-            $dashboardOrderCount = $orders->get()->count();
+            $items = $this->getOrderList($restorantId, $request->order_type);
+            // $orders = Order::orderBy('created_at','desc');
 
-            switch ($request->order_type) {
-                case 'requested_order':
-                        $alias = 'just_created';
-                    break;
-                case 'runing_order':
-                        $alias = 'accepted_by_restaurant';
-                    break;                
-                case 'done_order':
-                        $alias = 'closed';
-                    break;                
-                case 'cancel_order':
-                        $alias = 'rejected_by_restaurant';
-                    break;                
-                default:
-                    $alias = 'just_created';
-                    break;
-            }
+            // //$restorant_id = auth()->user()->restorant->id;
 
-            $items=array();
-            foreach ($orders->get() as $key => $order) {
-                if($order->status->pluck('alias')->last() == $alias){
-                        $item=array(
-                            "order_id"=>$order->id,
-                            "chef_name"=>$order->restorant->name,
-                            "chef_id"=>$order->restorant_id,
-                            "created"=>$order->created_at,
-                            "last_status"=>$order->status->pluck('alias')->last(),
-                            "client_name"=>$order->client?$order->client->name:"",
-                            "client_id"=>$order->client?$order->client_id:null,
-                            "table_name"=>$order->table?$order->table->name:"",
-                            "table_id"=>$order->table?$order->table_id:null,
-                            "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
-                            "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
-                            "address"=>$order->address?$order->address->address:"",
-                            "address_id"=>$order->address_id,
-                            //"driver_name"=>$order->driver?$order->driver->name:"",
-                            //"driver_id"=>$order->driver_id,
-                            "order_value"=>$order->order_price,
-                            "order_delivery"=>$order->delivery_price,
-                            "order_total"=>$order->delivery_price+$order->order_price,
-                            'payment_method'=>$order->payment_method,
-                            'srtipe_payment_id'=>$order->srtipe_payment_id,
-                            //'order_fee'=>$order->fee_value,
-                            //'restaurant_fee'=>$order->fee,
-                            //'restaurant_static_fee'=>$order->static_fee,
-                            //'vat'=>$order->vatvalue
-                          );
-                        array_push($items,$item);
-                    }
-            }
+            // $orders =$orders->where(['restorant_id' => $restorantId]);
+            // $dashboardOrderCount = $orders->get()->count();
+
+            // switch ($request->order_type) {
+            //     case 'requested_order':
+            //             $alias = 'just_created';
+            //         break;
+            //     case 'runing_order':
+            //             $alias = 'accepted_by_restaurant';
+            //         break;                
+            //     case 'done_order':
+            //             $alias = 'closed';
+            //         break;                
+            //     case 'cancel_order':
+            //             $alias = 'rejected_by_restaurant';
+            //         break;                
+            //     default:
+            //         $alias = 'just_created';
+            //         break;
+            // }
+
+            // $items=array();
+            // foreach ($orders->get() as $key => $order) {
+            //     if($order->status->pluck('alias')->last() == $alias){
+            //             $item=array(
+            //                 "order_id"=>$order->id,
+            //                 "chef_name"=>$order->restorant->name,
+            //                 "chef_id"=>$order->restorant_id,
+            //                 "created"=>$order->created_at,
+            //                 "last_status"=>$order->status->pluck('alias')->last(),
+            //                 "client_name"=>$order->client?$order->client->name:"",
+            //                 "client_id"=>$order->client?$order->client_id:null,
+            //                 "table_name"=>$order->table?$order->table->name:"",
+            //                 "table_id"=>$order->table?$order->table_id:null,
+            //                 "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
+            //                 "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
+            //                 "address"=>$order->address?$order->address->address:"",
+            //                 "address_id"=>$order->address_id,
+            //                 //"driver_name"=>$order->driver?$order->driver->name:"",
+            //                 //"driver_id"=>$order->driver_id,
+            //                 "order_value"=>$order->order_price,
+            //                 "order_delivery"=>$order->delivery_price,
+            //                 "order_total"=>$order->delivery_price+$order->order_price,
+            //                 'payment_method'=>$order->payment_method,
+            //                 'srtipe_payment_id'=>$order->srtipe_payment_id,
+            //                 //'order_fee'=>$order->fee_value,
+            //                 //'restaurant_fee'=>$order->fee,
+            //                 //'restaurant_static_fee'=>$order->static_fee,
+            //                 //'vat'=>$order->vatvalue
+            //               );
+            //             array_push($items,$item);
+            //         }
+            // }
 
             return response()->json([
                 'data' => $items,
@@ -929,12 +928,22 @@ class ChefController extends Controller
         }
     }
 
-     public function chefdashboardview(Request $request){
-        $user = User::where(['api_token' => $request->api_token])->first();
-
+    /**
+     * This is use for display chef dashboard view
+     * 
+     */
+    public function chefdashboardview(Request $request){
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
-            $user_id = $user->id;
+            $user_id = $user[0]->id;
+            $user_id = 1;
+            $runing_order = $this->getOrderList($user_id, "runing_order");
+            $runing_order_count = count($runing_order);
+
+            $requested_order = $this->getOrderList($user_id, "requested_order");
+            $requested_order_count = count($requested_order);
+            
             $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
             $total_revenue = number_format(0, 2);
             if($revenue)
@@ -942,7 +951,7 @@ class ChefController extends Controller
                 $total_revenue = number_format($revenue[0]->revenue, 2);
             }
             //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
-            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%H%A') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY) GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%H%A') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
 
             $reviews = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
             $review_data['rating_average'] = $reviews[0]->rating_average;
@@ -951,6 +960,8 @@ class ChefController extends Controller
             //  AND o.created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
             $popular_items = DB::select("SELECT SUM(ohi.qty) sale_count, i.id, i.image, i.name, i.price, i.vat FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id ORDER BY SUM(ohi.qty) DESC");
 
+            $data['total_runing_order'] = $runing_order_count;
+            $data['total_requested_order'] = $requested_order_count;
             $data['total_revenue'] = $total_revenue;
             $data['revenue_list'] = $revenue_list;
             $data['reviews'] = $review_data;
@@ -968,6 +979,65 @@ class ChefController extends Controller
                 'errMsg' => 'Invalid token'
             ]);
         }
+    }
+
+    public function getOrderList($restorantId, $order_type)
+    {
+        $orders = Order::orderBy('created_at','desc');
+        $orders = $orders->where(['restorant_id' => $restorantId]);
+        $dashboardOrderCount = $orders->get()->count();
+
+        switch ($order_type) {
+            case 'requested_order':
+                    $alias = 'just_created';
+                break;
+            case 'runing_order':
+                    $alias = 'accepted_by_restaurant';
+                break;                
+            case 'done_order':
+                    $alias = 'closed';
+                break;                
+            case 'cancel_order':
+                    $alias = 'rejected_by_restaurant';
+                break;                
+            default:
+                $alias = 'just_created';
+                break;
+        }
+
+        $items=array();
+        foreach ($orders->get() as $key => $order) {
+            if($order->status->pluck('alias')->last() == $alias) {
+                $item=array(
+                    "order_id"=>$order->id,
+                    "chef_name"=>$order->restorant->name,
+                    "chef_id"=>$order->restorant_id,
+                    "created"=>$order->created_at,
+                    "last_status"=>$order->status->pluck('alias')->last(),
+                    "client_name"=>$order->client ?  $order->client->name : "",
+                    "client_id"=>$order->client ? $order->client_id : null,
+                    "table_name"=>$order->table ? $order->table->name : "",
+                    "table_id"=>$order->table ? $order->table_id : null,
+                    "area_name"=>$order->table && $order->table->restoarea ? $order->table->restoarea->name : "",
+                    "area_id"=>$order->table && $order->table->restoarea ? $order->table->restoarea->id : null,
+                    "address"=>$order->address ? $order->address->address : "",
+                    "address_id"=>$order->address_id,
+                    //"driver_name"=>$order->driver?$order->driver->name:"",
+                    //"driver_id"=>$order->driver_id,
+                    "order_value"=>$order->order_price,
+                    "order_delivery"=>$order->delivery_price,
+                    "order_total"=>$order->delivery_price+$order->order_price,
+                    'payment_method'=>$order->payment_method,
+                    'srtipe_payment_id'=>$order->srtipe_payment_id,
+                    //'order_fee'=>$order->fee_value,
+                    //'restaurant_fee'=>$order->fee,
+                    //'restaurant_static_fee'=>$order->static_fee,
+                    //'vat'=>$order->vatvalue
+                );
+                array_push($items,$item);
+            }
+        }
+        return $items;
     }
 
 }
