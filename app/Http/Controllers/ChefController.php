@@ -803,6 +803,10 @@ class ChefController extends Controller
 
             //$restorant_id = auth()->user()->restorant->id;
             $restorantId = $user->id;
+            
+            echo 'restorantId = ' . $restorantId;
+            exit();
+
             $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
@@ -927,7 +931,7 @@ class ChefController extends Controller
 
      public function chefdashboardview(Request $request){
         $user = User::where(['api_token' => $request->api_token])->first();
-        
+
         if($user)
         {
             $user_id = $user->id;
