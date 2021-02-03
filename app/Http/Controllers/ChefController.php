@@ -634,8 +634,6 @@ class ChefController extends Controller
         //Find client
         $client = User::where(['api_token' => $request->api_token])->first();
 
-
-
         //Try payment
         $srtipe_payment_id=null;
         if($request->payment_method == "stripe"){
@@ -804,8 +802,8 @@ class ChefController extends Controller
             $orders = Order::orderBy('created_at','desc');
 
             //$restorant_id = auth()->user()->restorant->id;
-            $restorant_id = 1;
-            $orders =$orders->where(['restorant_id'=>$restorant_id]);
+            $restorantId = $user->id;
+            $orders =$orders->where(['restorant_id' => $restorantId]);
             $dashboardOrderCount = $orders->get()->count();
 
             switch ($request->order_type) {
@@ -883,6 +881,7 @@ class ChefController extends Controller
     public function changeorderstatus(Request $request){
 
         $user = User::where(['api_token' => $request->api_token])->first();
+        
         if($user){
 
             switch ($request->order_status) {
@@ -918,6 +917,37 @@ class ChefController extends Controller
                 ]);
             }
 
+        } else {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for display chef dashboard view
+     * 
+     */
+    public function chefdashboardview(Request $request){
+
+        $user = DB::select("SELECT * from users");
+
+        return response()->json([
+                'status' => true,
+                'data' => $user,
+                'succMsg' => 'Order status change successfully'
+            ]);
+
+        //$user = User::where(['api_token' => $request->api_token])->first();
+
+        if($user){
+
+            return response()->json([
+                'status' => true,
+                'succMsg' => 'Order status change successfully'
+            ]);
+            
         } else {
             return response()->json([
                 'status' => false,
