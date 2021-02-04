@@ -119,6 +119,12 @@ class ChefController extends Controller
         return redirect()->route('clients.index')->withStatus(__('Client successfully deleted.'));
     }
 
+    /**
+     * This is use to get Restorants
+     *
+     * @param  int $city_id
+     * @return \Illuminate\Http\Response
+     */
     public function getRestorants($city_id="none")
     {
         if($city_id=="none"){
@@ -142,6 +148,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get Restorants Items
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
     public function getRestorantItems($id)
     {
         $restorant = Restorant::where(['id' => $id, 'active' => 1])->with(['categories.items.variants.extras'])->first();
@@ -182,6 +194,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get MyNotifications
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyNotifications(){
         $client = User::where(['api_token' => $_GET['api_token']])->first();
 
@@ -199,6 +216,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to get MyOrders
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyOrders()
     {
         $client = User::where(['api_token' => $_GET['api_token']])->first();//->with(['orders']);
@@ -210,7 +232,6 @@ class ChefController extends Controller
             ]);
         }
 
-
         //Get client orders
         $orders=Order::where("client_id",$client->id)->orderBy('created_at','DESC')->limit(50)->with(['restorant','status','items','address','driver'])->get();
 
@@ -221,6 +242,12 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to MyAddressesForRestaurtant
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddressesForRestaurtant($restaurant_id){
         $restaurant = Restorant::findOrFail($restaurant_id);
         $address=$this->getAccessibleAddresses(User::where(['api_token' => $_GET['api_token']])->with(['addresses'])->first(),$restaurant);
@@ -240,6 +267,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to getMyAddressesWithFees
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddressesWithFees($restaurant_id)
     {
         $restaurant = Restorant::findOrFail($restaurant_id);
@@ -270,17 +303,18 @@ class ChefController extends Controller
         }
     }
 
-
-
+    /**
+     * This is use to getMyAddresses
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddresses()
     {
         $client = User::where(['api_token' => $_GET['api_token']])->with(['addresses'])->first();
 
         if(!$client->addresses->isEmpty()){
 
-
-            //For each clinet address calcualte the price
-            
+            //For each clinet address calcualte the price            
             return response()->json([
                 'data' => $client->addresses,
                 'status' => true,
@@ -296,6 +330,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to Create the address
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function makeAddress(Request $request)
     {
         $client = User::where(['api_token' => $request->api_token])->first();
@@ -317,6 +356,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to delete the address
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function deleteAddress(Request $request)
     {
         $client = User::where(['api_token' => $request->api_token])->first();
@@ -339,6 +383,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get token
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getToken(Request $request)
     {
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
@@ -372,6 +421,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to register the user
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function register(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -539,6 +593,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to login by using Facebook
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function loginFacebook(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -578,6 +638,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to login by Google
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function loginGoogle(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -617,7 +682,9 @@ class ChefController extends Controller
     }
 
     /**
-     * Make order from mobile api
+     * This is use to make a new order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function makeOrder(Request $request)
     {
@@ -722,6 +789,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to get settings
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getSettings(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -765,6 +837,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get User Data
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getUseData()
     {
         $user = User::where(['api_token' => $_GET['api_token']])->first();
@@ -789,10 +866,13 @@ class ChefController extends Controller
 
     /**
      * This is use to get the list of required orders
+     *
      * Requested Order
      * Running Order
      * Done Order
      * Cancel Order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function orderlist(Request $request){
 
@@ -819,10 +899,13 @@ class ChefController extends Controller
 
     /**
      * This is use change the status of order
+     *
      * Chef will change the status of order
      * Accepted order
      * Done Order
      * Cancel Order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function changeorderstatus(Request $request){
 
@@ -874,12 +957,15 @@ class ChefController extends Controller
 
     /**
      * This is use for display chef dashboard view
+     *
      * Running Order Count
      * Requested Order Count
      * Total Revenue
      * Revenue Graph
      * Rating count and average
      * Popuar Items List
+     *
+     * @return \Illuminate\Http\Response
      */
     public function chefdashboardview(Request $request){
         $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
@@ -930,6 +1016,14 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use get order list
+     *
+     * @param  int $restaurant_id
+     * @param  string $order_type
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getOrderList($restorantId, $order_type)
     {
         $orders = Order::orderBy('created_at','desc');
@@ -998,10 +1092,13 @@ class ChefController extends Controller
 
     /**
      * This is use for display chef revenue
+     *
      * Total Revenue
      * Revenue Graph
      * Rating count and average
      * Popuar Items List
+     *
+     * @return \Illuminate\Http\Response
      */
     public function revenuelist(Request $request)
     {
@@ -1042,7 +1139,14 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use for update password
+     * This is use to rested the password
+     * Flow:
+     *
+     * 1. User enter forgot password email
+     * 2. User got OTP in mail
+     * 3. User come into Reset password screen after login
+     *
+     * @return \Illuminate\Http\Response
      */
     public function resetpassword(Request $request)
     {
@@ -1100,4 +1204,38 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    /**
+     * This is use for get user profile information
+     * 
+     */
+    public function userprofile(Request $request)
+    {
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        if($user)
+        {
+            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user[0]->id."'");
+            $start_time = "0_from";
+            $end_time = "0_to";
+            $data = array();
+            $data['id'] = $user[0]->id;
+            $data['name'] = $user[0]->name;
+            $data['email'] = $user[0]->email;
+            $data['phone'] = $user[0]->phone;
+            $data['service_time'] = "Mon-Sun ".(date("h:i A", strtotime($hours[0]->$start_time)))." - ".(date("h:i A", strtotime($hours[0]->$end_time)));
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'User Profile found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+    
 }
