@@ -384,7 +384,7 @@ class ChefController extends Controller
 
                 'city' => ['required', 'string', 'min:2'],
                 'postcode' => ['required', 'integer'],
-                'address' => ['required', 'string', 'min:8'],
+                'address' => ['required', 'string'/*, 'min:8'*/],
                 'service_type' => ['required', 'integer'],
                 
                 'is_cooking_passionate' => ['required', 'integer'],
@@ -802,63 +802,6 @@ class ChefController extends Controller
             $restorantId = $user->id;
 
             $items = $this->getOrderList($restorantId, $request->order_type);
-            // $orders = Order::orderBy('created_at','desc');
-
-            // //$restorant_id = auth()->user()->restorant->id;
-
-            // $orders =$orders->where(['restorant_id' => $restorantId]);
-            // $dashboardOrderCount = $orders->get()->count();
-
-            // switch ($request->order_type) {
-            //     case 'requested_order':
-            //             $alias = 'just_created';
-            //         break;
-            //     case 'runing_order':
-            //             $alias = 'accepted_by_restaurant';
-            //         break;                
-            //     case 'done_order':
-            //             $alias = 'closed';
-            //         break;                
-            //     case 'cancel_order':
-            //             $alias = 'rejected_by_restaurant';
-            //         break;                
-            //     default:
-            //         $alias = 'just_created';
-            //         break;
-            // }
-
-            // $items=array();
-            // foreach ($orders->get() as $key => $order) {
-            //     if($order->status->pluck('alias')->last() == $alias){
-            //             $item=array(
-            //                 "order_id"=>$order->id,
-            //                 "chef_name"=>$order->restorant->name,
-            //                 "chef_id"=>$order->restorant_id,
-            //                 "created"=>$order->created_at,
-            //                 "last_status"=>$order->status->pluck('alias')->last(),
-            //                 "client_name"=>$order->client?$order->client->name:"",
-            //                 "client_id"=>$order->client?$order->client_id:null,
-            //                 "table_name"=>$order->table?$order->table->name:"",
-            //                 "table_id"=>$order->table?$order->table_id:null,
-            //                 "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
-            //                 "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
-            //                 "address"=>$order->address?$order->address->address:"",
-            //                 "address_id"=>$order->address_id,
-            //                 //"driver_name"=>$order->driver?$order->driver->name:"",
-            //                 //"driver_id"=>$order->driver_id,
-            //                 "order_value"=>$order->order_price,
-            //                 "order_delivery"=>$order->delivery_price,
-            //                 "order_total"=>$order->delivery_price+$order->order_price,
-            //                 'payment_method'=>$order->payment_method,
-            //                 'srtipe_payment_id'=>$order->srtipe_payment_id,
-            //                 //'order_fee'=>$order->fee_value,
-            //                 //'restaurant_fee'=>$order->fee,
-            //                 //'restaurant_static_fee'=>$order->static_fee,
-            //                 //'vat'=>$order->vatvalue
-            //               );
-            //             array_push($items,$item);
-            //         }
-            // }
 
             return response()->json([
                 'data' => $items,
@@ -1111,7 +1054,7 @@ class ChefController extends Controller
                     ->update(['password' => Hash::make($request->password)]);
             return response()->json([
                 'status' => true,
-                'errMsg' => 'Password Changed successfully.'
+                'succMsg' => 'Password Changed successfully.'
             ]);
         }
         else
@@ -1146,7 +1089,7 @@ class ChefController extends Controller
             return response()->json([
                 'status' => true,
                 'data' => $data,
-                'errMsg' => 'Reviews found successfully.'
+                'succMsg' => 'Reviews found successfully.'
             ]);
         }
         else
