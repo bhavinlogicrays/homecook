@@ -65,6 +65,8 @@ Route::post('/orderlist', 'ChefController@orderlist')->name('chef.orderlist');
 Route::post('/changeorderstatus', 'ChefController@changeorderstatus')->name('chef.changeorderstatus');
 
 Route::post('/chefdashboardview', 'ChefController@chefdashboardview')->name('chef.chefdashboardview');
+Route::post('/revenuelist', 'chefcontroller@revenuelist')->name('chef.revenuelist');
+Route::post('/resetpassword', 'chefcontroller@resetpassword')->name('chef.resetpassword');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');

@@ -795,10 +795,71 @@ class ChefController extends Controller
      * Cancel Order
      */
     public function orderlist(Request $request){
+
         $user = User::where(['api_token' => $request->api_token])->first();
         if($user){
+
             $restorantId = $user->id;
+
             $items = $this->getOrderList($restorantId, $request->order_type);
+            // $orders = Order::orderBy('created_at','desc');
+
+            // //$restorant_id = auth()->user()->restorant->id;
+
+            // $orders =$orders->where(['restorant_id' => $restorantId]);
+            // $dashboardOrderCount = $orders->get()->count();
+
+            // switch ($request->order_type) {
+            //     case 'requested_order':
+            //             $alias = 'just_created';
+            //         break;
+            //     case 'runing_order':
+            //             $alias = 'accepted_by_restaurant';
+            //         break;                
+            //     case 'done_order':
+            //             $alias = 'closed';
+            //         break;                
+            //     case 'cancel_order':
+            //             $alias = 'rejected_by_restaurant';
+            //         break;                
+            //     default:
+            //         $alias = 'just_created';
+            //         break;
+            // }
+
+            // $items=array();
+            // foreach ($orders->get() as $key => $order) {
+            //     if($order->status->pluck('alias')->last() == $alias){
+            //             $item=array(
+            //                 "order_id"=>$order->id,
+            //                 "chef_name"=>$order->restorant->name,
+            //                 "chef_id"=>$order->restorant_id,
+            //                 "created"=>$order->created_at,
+            //                 "last_status"=>$order->status->pluck('alias')->last(),
+            //                 "client_name"=>$order->client?$order->client->name:"",
+            //                 "client_id"=>$order->client?$order->client_id:null,
+            //                 "table_name"=>$order->table?$order->table->name:"",
+            //                 "table_id"=>$order->table?$order->table_id:null,
+            //                 "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
+            //                 "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
+            //                 "address"=>$order->address?$order->address->address:"",
+            //                 "address_id"=>$order->address_id,
+            //                 //"driver_name"=>$order->driver?$order->driver->name:"",
+            //                 //"driver_id"=>$order->driver_id,
+            //                 "order_value"=>$order->order_price,
+            //                 "order_delivery"=>$order->delivery_price,
+            //                 "order_total"=>$order->delivery_price+$order->order_price,
+            //                 'payment_method'=>$order->payment_method,
+            //                 'srtipe_payment_id'=>$order->srtipe_payment_id,
+            //                 //'order_fee'=>$order->fee_value,
+            //                 //'restaurant_fee'=>$order->fee,
+            //                 //'restaurant_static_fee'=>$order->static_fee,
+            //                 //'vat'=>$order->vatvalue
+            //               );
+            //             array_push($items,$item);
+            //         }
+            // }
+
             return response()->json([
                 'data' => $items,
                 'dataCount' => count($items),
@@ -870,14 +931,19 @@ class ChefController extends Controller
 
     /**
      * This is use for display chef dashboard view
-     * 
+     * Running Order Count
+     * Requested Order Count
+     * Total Revenue
+     * Revenue Graph
+     * Rating count and average
+     * Popuar Items List
      */
     public function chefdashboardview(Request $request){
         $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
+            // user id is chef id
             $user_id = $user[0]->id;
-            $user_id = 1;
             $runing_order = $this->getOrderList($user_id, "runing_order");
             $runing_order_count = count($runing_order);
 
@@ -891,7 +957,7 @@ class ChefController extends Controller
                 $total_revenue = number_format($revenue[0]->revenue, 2);
             }
             //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
-            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%H%A') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%h%p') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
 
             $reviews = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
             $review_data['rating_average'] = $reviews[0]->rating_average;
@@ -909,7 +975,7 @@ class ChefController extends Controller
             return response()->json([
                 'status' => true,
                 'data' => $data,
-                'succMsg' => 'Order status change successfully'
+                'succMsg' => 'Dashboard Data fetched successfully'
             ]);
         }
         else
@@ -969,15 +1035,91 @@ class ChefController extends Controller
                     "order_total"=>$order->delivery_price+$order->order_price,
                     'payment_method'=>$order->payment_method,
                     'srtipe_payment_id'=>$order->srtipe_payment_id,
+                    'item_name'=>'',
+                    'item_image'=>'',
                     //'order_fee'=>$order->fee_value,
                     //'restaurant_fee'=>$order->fee,
                     //'restaurant_static_fee'=>$order->static_fee,
                     //'vat'=>$order->vatvalue
                 );
+                if($order->items->isNotEmpty())
+                {
+                    $item['item_name'] = $order->items[0]->name;
+                    $item['item_image'] = $order->items[0]->image;
+                }
                 array_push($items,$item);
             }
         }
         return $items;
     }
 
+    /**
+     * This is use for display chef revenue
+     * Total Revenue
+     * Revenue Graph
+     * Rating count and average
+     * Popuar Items List
+     */
+    public function revenuelist(Request $request)
+    {
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user[0]->id;
+            
+            $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
+            $total_revenue = number_format(0, 2);
+            if($revenue)
+            {
+                $total_revenue = number_format($revenue[0]->revenue, 2);
+            }
+            //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%h%p') AS added_date FROM orders WHERE restorant_id='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
+
+            $revenue_item_list = DB::select("SELECT i.id, i.name, i.image, c.name AS category_name, COUNT(ohi.item_id) AS item_sale_count FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id JOIN categories AS c ON c.id=i.category_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id");
+
+            $data = array();
+            $data['total_revenue'] = $total_revenue;
+            $data['revenue_list'] = $revenue_list;
+            $data['item_list'] = $revenue_item_list;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'Revenue list found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for update password
+     */
+    public function resetpassword(Request $request)
+    {
+        $user = DB::select("SELECT * from users WHERE email='".$request->email."'");
+        if($user)
+        {
+            DB::table('users')
+                    ->where(['email' => $request->email])
+                    ->update(['password' => Hash::make($request->password)]);
+            return response()->json([
+                'status' => true,
+                'errMsg' => 'Password Changed successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid email'
+            ]);
+        }
+    }
 }
