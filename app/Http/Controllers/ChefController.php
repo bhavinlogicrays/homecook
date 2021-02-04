@@ -1134,12 +1134,13 @@ class ChefController extends Controller
             // user id is chef id
             $user_id = $user[0]->id;
 
-            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'no-image.jpg' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
-            foreach($reviews as &$review)
-            {
-                $image_url = public_path().'uploads/settings/'.$review->image;
-                $review->image = $image_url;
-            }
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'https://www.dev.halal.masumparvej.me/uploads/settings/no-image.png' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
+            // echo Storage::url();
+            // foreach($reviews as &$review)
+            // {
+            //     $image_url = public_path().'/uploads/settings/'.$review->image;
+            //     $review->image = $image_url;
+            // }
             $data = array();
             $data['reviews'] = $reviews;
             return response()->json([
