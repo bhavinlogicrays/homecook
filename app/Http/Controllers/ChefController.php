@@ -996,6 +996,11 @@ class ChefController extends Controller
             //  AND o.created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
             $popular_items = DB::select("SELECT SUM(ohi.qty) sale_count, i.id, i.image, i.name, i.price, i.vat FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id ORDER BY SUM(ohi.qty) DESC");
 
+            $popularItemsWithImage = array();
+            foreach ($popular_items as $key => &$popularItem) {
+                $popularItem->image = Items::getImge($popularItem->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
+      
             $data['total_runing_order'] = $runing_order_count;
             $data['total_requested_order'] = $requested_order_count;
             $data['total_revenue'] = $total_revenue;
@@ -1083,7 +1088,7 @@ class ChefController extends Controller
                 if($order->items->isNotEmpty())
                 {
                     $item['item_name'] = $order->items[0]->name;
-                    $item['item_image'] = $order->items[0]->image;
+                    $item['item_image'] = $order->items[0]->icon;
                 }
                 array_push($items,$item);
             }
