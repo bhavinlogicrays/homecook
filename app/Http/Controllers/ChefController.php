@@ -934,7 +934,8 @@ class ChefController extends Controller
             if(!empty($status)){
                 // order_has_status table having user_id and this user id is client_id ( customr id not ChefId) 
                 DB::table('order_has_status')
-                        ->where(['order_id' => $request->order_id, 'user_id' => $orders->client_id])
+                        //->where(['order_id' => $request->order_id, 'user_id' => $orders->client_id])
+                        ->where(['order_id' => $request->order_id])
                         ->update(['status_id' => $status->id]);
                 return response()->json([
                     'status' => true,
