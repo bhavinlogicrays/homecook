@@ -1122,4 +1122,38 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    /**
+     * This is use for display chef review/reting list
+     */
+    public function reviewlist(Request $request)
+    {
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user[0]->id;
+
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'no-image.jpg' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
+            foreach($reviews as &$review)
+            {
+                $image_url = public_path().'uploads/settings/'.$review->image;
+                $review->image = $image_url;
+            }
+            $data = array();
+            $data['reviews'] = $reviews;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'errMsg' => 'Reviews found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
 }
