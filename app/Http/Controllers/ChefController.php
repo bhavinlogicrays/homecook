@@ -1242,7 +1242,8 @@ class ChefController extends Controller
             $data['name'] = $user->name;
             $data['email'] = $user->email;
             $data['phone'] = $user->phone;
-            $data['service_time'] = "Mon-Sun ".(date("h:i A", strtotime($hours[0]->$start_time)))." - ".(date("h:i A", strtotime($hours[0]->$end_time)));
+            $data['hours_from'] = $hours[0]->$start_time;
+            $data['hours_to'] = $hours[0]->$end_time;
             return response()->json([
                 'status' => true,
                 'data' => $data,
