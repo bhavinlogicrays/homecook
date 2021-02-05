@@ -263,4 +263,4 @@ Route::get('order/success', 'OrderController@success')->name('order.success');
 
 Route::post('/fb-order', 'OrderController@fbOrderMsg')->name('fb.order');
 
-
+Route::get('/test', 'RestorantController@test')->name('restorant.test');
