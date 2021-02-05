@@ -1199,7 +1199,7 @@ class ChefController extends Controller
             $review_data['rating_average'] = $review_count[0]->rating_average;
             $review_data['rating_count'] = $review_count[0]->rating_count;
 
-            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."' ORDER BY r.created_at DESC, id DESC");
             // echo Storage::url();
             foreach($reviews as &$review)
             {
@@ -1290,6 +1290,10 @@ class ChefController extends Controller
                 DB::table('users')
                     ->where(['id' => $user->id])
                     ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+
+                DB::table('restorants')
+                    ->where(['id' => $restorant->id])
+                    ->update(['name' => $request->name, 'phone' => $request->phone]);
 
                 DB::table('hours')
                     ->where(['id' => $hours->id])
