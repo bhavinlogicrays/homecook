@@ -968,12 +968,12 @@ class ChefController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function chefdashboardview(Request $request){
-        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+    public function chefdashboardview(Request $request) {
+        $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
             // user id is chef id
-            $user_id = $user[0]->id;
+            $user_id = $user->id;
             $runing_order = $this->getOrderList($user_id, "runing_order");
             $runing_order_count = count($runing_order);
 
@@ -1109,11 +1109,11 @@ class ChefController extends Controller
      */
     public function revenuelist(Request $request)
     {
-        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
             // user id is chef id
-            $user_id = $user[0]->id;
+            $user_id = $user->id;
             
             $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
             $total_revenue = number_format(0, 2);
@@ -1126,6 +1126,9 @@ class ChefController extends Controller
 
             $revenue_item_list = DB::select("SELECT i.id, i.name, i.image, c.name AS category_name, COUNT(ohi.item_id) AS item_sale_count FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id JOIN categories AS c ON c.id=i.category_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id");
 
+            foreach ($revenue_item_list as $key => &$revenue_item) {
+                $revenue_item->image = Items::getImge($revenue_item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
             $data = array();
             $data['total_revenue'] = $total_revenue;
             $data['revenue_list'] = $revenue_list;
@@ -1146,7 +1149,7 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use to rested the password
+     * This is use to reset the password
      * Flow:
      *
      * 1. User enter forgot password email
@@ -1157,7 +1160,7 @@ class ChefController extends Controller
      */
     public function resetpassword(Request $request)
     {
-        $user = DB::select("SELECT * from users WHERE email='".$request->email."'");
+        $user = User::where(['email' => $request->email])->first();
         if($user)
         {
             DB::table('users')
@@ -1178,27 +1181,31 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use for display chef review/reting list
+     * This is use for display chef review/rating list
+     *
+     * reviews
+     * review_count
+     * @return \Illuminate\Http\Response
      */
     public function reviewlist(Request $request)
     {
-        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
             // user id is chef id
-            $user_id = $user[0]->id;
+            $user_id = $user->id;
 
             $review_count = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
             $review_data['rating_average'] = $review_count[0]->rating_average;
             $review_data['rating_count'] = $review_count[0]->rating_count;
 
-            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'https://www.dev.halal.masumparvej.me/uploads/settings/no-image.png' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
             // echo Storage::url();
-            // foreach($reviews as &$review)
-            // {
-            //     $image_url = public_path().'/uploads/settings/'.$review->image;
-            //     $review->image = $image_url;
-            // }
+            foreach($reviews as &$review)
+            {
+                $image_url = url('/uploads/settings/no-image.png');
+                $review->image = $image_url;
+            }
             $data = array();
             $data['reviews'] = $reviews;
             $data['review_count'] = $review_data;
@@ -1220,20 +1227,21 @@ class ChefController extends Controller
     /**
      * This is use for get user profile information
      * 
+     * @return \Illuminate\Http\Response
      */
     public function userprofile(Request $request)
     {
-        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+        $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
-            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user[0]->id."'");
+            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user->id."'");
             $start_time = "0_from";
             $end_time = "0_to";
             $data = array();
-            $data['id'] = $user[0]->id;
-            $data['name'] = $user[0]->name;
-            $data['email'] = $user[0]->email;
-            $data['phone'] = $user[0]->phone;
+            $data['id'] = $user->id;
+            $data['name'] = $user->name;
+            $data['email'] = $user->email;
+            $data['phone'] = $user->phone;
             $data['service_time'] = "Mon-Sun ".(date("h:i A", strtotime($hours[0]->$start_time)))." - ".(date("h:i A", strtotime($hours[0]->$end_time)));
             return response()->json([
                 'status' => true,
@@ -1250,6 +1258,71 @@ class ChefController extends Controller
         }
     }
 
-    
+    /**
+     * This is use for get user profile information
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function updateuserprofile(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'name' => ['required', 'string', 'max:255'],
+                'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
+            ]);
+
+            $user_email_exist = User::where(['email' => $user->email])->whereNotIn('id', [$user->id])->first();
+            if($user_email_exist)
+            {
+                return response()->json([
+                    'status' => true,
+                    'errMsg' => 'This email id is not available.'
+                ]);
+            }
+            else
+            {
+
+                $restorant = Restorant::where(['user_id'=>$user->id])->first();
+                $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
+
+                DB::table('users')
+                    ->where(['id' => $user->id])
+                    ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+
+                DB::table('hours')
+                    ->where(['id' => $hours->id])
+                    ->update([
+                                '0_from'=>$request->hours_from, '0_to'=>$request->hours_to,
+                                '1_from'=>$request->hours_from, '1_to'=>$request->hours_to,
+                                '2_from'=>$request->hours_from, '2_to'=>$request->hours_to,
+                                '3_from'=>$request->hours_from, '3_to'=>$request->hours_to,
+                                '4_from'=>$request->hours_from, '4_to'=>$request->hours_to,
+                                '5_from'=>$request->hours_from, '5_to'=>$request->hours_to,
+                                '6_from'=>$request->hours_from, '6_to'=>$request->hours_to,
+                                'updated_at'=>date("Y-m-d H:i:s")
+                            ]);
+
+                $updated_user = User::where(['id' => $user->id])->first();
+                $data = array();
+                $data['name'] = $updated_user->name;
+                $data['email'] = $updated_user->email;
+                $data['phone'] = $updated_user->phone;
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'User Profile found successfully.'
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
     
 }
