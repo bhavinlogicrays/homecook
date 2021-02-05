@@ -1188,6 +1188,10 @@ class ChefController extends Controller
             // user id is chef id
             $user_id = $user[0]->id;
 
+            $review_count = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
+            $review_data['rating_average'] = $review_count[0]->rating_average;
+            $review_data['rating_count'] = $review_count[0]->rating_count;
+
             $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'https://www.dev.halal.masumparvej.me/uploads/settings/no-image.png' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
             // echo Storage::url();
             // foreach($reviews as &$review)
@@ -1197,6 +1201,7 @@ class ChefController extends Controller
             // }
             $data = array();
             $data['reviews'] = $reviews;
+            $data['review_count'] = $review_data;
             return response()->json([
                 'status' => true,
                 'data' => $data,
