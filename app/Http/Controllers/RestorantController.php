@@ -561,7 +561,6 @@ class RestorantController extends Controller
 
     public function test(){
 
-        error_reporting(0);
         // MAIL_DRIVER=smtp
         // MAIL_HOST=smtp.dreamhost.com
         // MAIL_PORT=465

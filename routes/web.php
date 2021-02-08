@@ -264,3 +264,6 @@ Route::get('order/success', 'OrderController@success')->name('order.success');
 Route::post('/fb-order', 'OrderController@fbOrderMsg')->name('fb.order');
 
 Route::get('/test', 'RestorantController@test')->name('restorant.test');
+Route::get('sendbasicemail','MailController@basic_email');
+Route::get('sendhtmlemail','MailController@html_email');
+Route::get('sendattachmentemail','MailController@attachment_email');
