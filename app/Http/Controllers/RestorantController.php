@@ -21,6 +21,9 @@ use Carbon\Carbon;
 use App\Events\CallWaiter;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Swift_SmtpTransport;
+use Swift_Mailer;
+use Swift_Message;
+use Swift_TransportException;
 
 //use Intervention\Image\Image;
 use Image;
@@ -569,13 +572,13 @@ class RestorantController extends Controller
          // Setup your gmail mailer
 
     try{
-         $transport = (new Swift_SmtpTransport('smtp.dreamhost.com', 465))
+         $transport = (new \Swift_SmtpTransport('smtp.dreamhost.com', 465))
          ->setUsername("support@dev.halal.masumparvej.me")
          ->setPassword("wr9l9HbCaaclgwuazz");
 
-         $mailer = new Swift_Mailer($transport);
+         $mailer = new \Swift_Mailer($transport);
 
-         $message = (new Swift_Message('Reset Password'))
+         $message = (new \Swift_Message('Reset Password'))
          ->setFrom(['info@logicrays.com' => 'LogicRays'])
          ->setTo(['lr.testdemo@gmail.com' => 'Chef'])
          ->setBody('Here is the message itself');
