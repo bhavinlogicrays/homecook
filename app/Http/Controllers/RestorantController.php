@@ -564,19 +564,29 @@ class RestorantController extends Controller
         //     $m->to('Bhavin', 'Solanki')->subject('Your Reminder!');
         // });
 
-         \Mail::setSwiftMailer($gmail);
 
-         // $data['emailto'] = $email_sender;
-         // $data['sender'] = $email_to;
-         //Sender dan Reply harus sama
+          //https://accounts.google.com/DisplayUnlockCaptcha
+         // Setup your gmail mailer
+
+         $transport = (new Swift_SmtpTransport('smtp.dreamhost.com', 465))
+         ->setUsername("support@dev.halal.masumparvej.me")
+         ->setPassword("wr9l9HbCaaclgwuazz");
+
+         $mailer = new Swift_Mailer($transport);
 
          $message = (new Swift_Message('Reset Password'))
-         ->setFrom([$email_sender => 'LogicRaysTech'])
-         ->setTo([$email_to , 'lr.testdemo@gmail.com' => 'Bhavin'])
-         ->setBody('Here is the message itself')
-             ;
-             $result = $mailer->send($message);
-             
+         ->setFrom(['info@logicrays.com' => 'LogicRays'])
+         ->setTo(['lr.testdemo@gmail.com' => 'Chef'])
+         ->setBody('Here is the message itself');
+         $result = $mailer->send($message);
+
+
+    }catch(\Swift_TransportException $e){
+         $response = $e->getMessage() ;
+         echo $response;
+      }
+
+
         exit("Testing the Swift mailer functionality");
     }
 
