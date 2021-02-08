@@ -561,35 +561,36 @@ class RestorantController extends Controller
 
     public function test(){
 
-    // MAIL_DRIVER=smtp
-    // MAIL_HOST=smtp.dreamhost.com
-    // MAIL_PORT=465
-    // MAIL_USERNAME=support@dev.halal.masumparvej.me
-    // MAIL_PASSWORD=wr9l9HbCaaclgwuazz
-    // MAIL_ENCRYPTION=ssl
-    // MAIL_FROM_ADDRESS=support@dev.halal.masumparvej.me
-    // MAIL_FROM_NAME=HomeCookdook'd    
+        error_reporting(0);
+        // MAIL_DRIVER=smtp
+        // MAIL_HOST=smtp.dreamhost.com
+        // MAIL_PORT=465
+        // MAIL_USERNAME=support@dev.halal.masumparvej.me
+        // MAIL_PASSWORD=wr9l9HbCaaclgwuazz
+        // MAIL_ENCRYPTION=ssl
+        // MAIL_FROM_ADDRESS=support@dev.halal.masumparvej.me
+        // MAIL_FROM_NAME=HomeCookdook'd    
 
-    try{
-         $transport = (new \Swift_SmtpTransport('smtp.dreamhost.com', 465))
-         ->setUsername("support@dev.halal.masumparvej.me")
-         ->setPassword("wr9l9HbCaaclgwuazz");
+        try{
+             $transport = (new \Swift_SmtpTransport('smtp.dreamhost.com', 465))
+             ->setUsername("support@dev.halal.masumparvej.me")
+             ->setPassword("wr9l9HbCaaclgwuazz");
 
-         $mailer = new \Swift_Mailer($transport);
+             $mailer = new \Swift_Mailer($transport);
 
-         $message = (new \Swift_Message('Reset Password'))
-         ->setFrom(['support@dev.halal.masumparvej.me'])
-         ->setTo(['lr.testdemo@gmail.com'])
-         ->setBody('Here is the message itself');
-         $result = $mailer->send($message);
+             $message = (new \Swift_Message('Reset Password'))
+             ->setFrom(['support@dev.halal.masumparvej.me'])
+             ->setTo(['lr.testdemo@gmail.com'])
+             ->setBody('Here is the message itself');
+             $result = $mailer->send($message);
 
 
-    }catch(\Swift_TransportException $e){
-         //$response = $e->getMessage() ;
-         echo '<pre>';
-         print_r($e) ;
-         exit("In Error block");
-    }
+        }catch(\Swift_TransportException $e){
+             //$response = $e->getMessage() ;
+             echo '<pre>';
+             print_r($e) ;
+             exit("In Error block");
+        }
 
 
         exit("Testing the Swift mailer functionality");
