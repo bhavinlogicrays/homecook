@@ -968,12 +968,12 @@ class ChefController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function chefdashboardview(Request $request) {
-        $user = User::where(['api_token' => $request->api_token])->first();
+    public function chefdashboardview(Request $request){
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
             // user id is chef id
-            $user_id = $user->id;
+            $user_id = $user[0]->id;
             $runing_order = $this->getOrderList($user_id, "runing_order");
             $runing_order_count = count($runing_order);
 
@@ -1092,7 +1092,6 @@ class ChefController extends Controller
                 }
                 array_push($items,$item);
             }
-            
         }
         return $items;
     }
@@ -1109,11 +1108,11 @@ class ChefController extends Controller
      */
     public function revenuelist(Request $request)
     {
-        $user = User::where(['api_token' => $request->api_token])->first();
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
             // user id is chef id
-            $user_id = $user->id;
+            $user_id = $user[0]->id;
             
             $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
             $total_revenue = number_format(0, 2);
@@ -1126,9 +1125,6 @@ class ChefController extends Controller
 
             $revenue_item_list = DB::select("SELECT i.id, i.name, i.image, c.name AS category_name, COUNT(ohi.item_id) AS item_sale_count FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id JOIN categories AS c ON c.id=i.category_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id");
 
-            foreach ($revenue_item_list as $key => &$revenue_item) {
-                $revenue_item->image = Items::getImge($revenue_item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
-            }
             $data = array();
             $data['total_revenue'] = $total_revenue;
             $data['revenue_list'] = $revenue_list;
@@ -1149,7 +1145,7 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use to reset the password
+     * This is use to rested the password
      * Flow:
      *
      * 1. User enter forgot password email
@@ -1160,7 +1156,7 @@ class ChefController extends Controller
      */
     public function resetpassword(Request $request)
     {
-        $user = User::where(['email' => $request->email])->first();
+        $user = DB::select("SELECT * from users WHERE email='".$request->email."'");
         if($user)
         {
             DB::table('users')
@@ -1181,34 +1177,25 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use for display chef review/rating list
-     *
-     * reviews
-     * review_count
-     * @return \Illuminate\Http\Response
+     * This is use for display chef review/reting list
      */
     public function reviewlist(Request $request)
     {
-        $user = User::where(['api_token' => $request->api_token])->first();
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
             // user id is chef id
-            $user_id = $user->id;
+            $user_id = $user[0]->id;
 
-            $review_count = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
-            $review_data['rating_average'] = $review_count[0]->rating_average;
-            $review_data['rating_count'] = $review_count[0]->rating_count;
-
-            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."' ORDER BY r.created_at DESC, id DESC");
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'https://www.dev.halal.masumparvej.me/uploads/settings/no-image.png' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
             // echo Storage::url();
-            foreach($reviews as &$review)
-            {
-                $image_url = url('/uploads/settings/no-image.png');
-                $review->image = $image_url;
-            }
+            // foreach($reviews as &$review)
+            // {
+            //     $image_url = public_path().'/uploads/settings/'.$review->image;
+            //     $review->image = $image_url;
+            // }
             $data = array();
             $data['reviews'] = $reviews;
-            $data['review_count'] = $review_data;
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -1227,23 +1214,21 @@ class ChefController extends Controller
     /**
      * This is use for get user profile information
      * 
-     * @return \Illuminate\Http\Response
      */
     public function userprofile(Request $request)
     {
-        $user = User::where(['api_token' => $request->api_token])->first();
+        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
         if($user)
         {
-            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user->id."'");
+            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user[0]->id."'");
             $start_time = "0_from";
             $end_time = "0_to";
             $data = array();
-            $data['id'] = $user->id;
-            $data['name'] = $user->name;
-            $data['email'] = $user->email;
-            $data['phone'] = $user->phone;
-            $data['hours_from'] = $hours[0]->$start_time;
-            $data['hours_to'] = $hours[0]->$end_time;
+            $data['id'] = $user[0]->id;
+            $data['name'] = $user[0]->name;
+            $data['email'] = $user[0]->email;
+            $data['phone'] = $user[0]->phone;
+            $data['service_time'] = "Mon-Sun ".(date("h:i A", strtotime($hours[0]->$start_time)))." - ".(date("h:i A", strtotime($hours[0]->$end_time)));
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -1275,6 +1260,7 @@ class ChefController extends Controller
             ]);
 
             $user_email_exist = User::where(['email' => $user->email])->whereNotIn('id', [$user->id])->first();
+            // $user_name_exist = User::where(['name' => $user->name])->whereNotIn('id', [$user->id])->first();
             if($user_email_exist)
             {
                 return response()->json([
@@ -1282,6 +1268,13 @@ class ChefController extends Controller
                     'errMsg' => 'This email id is not available.'
                 ]);
             }
+            // elseif($user_name_exist)
+            // {
+            //     return response()->json([
+            //         'status' => true,
+            //         'errMsg' => 'This Name is not available.'
+            //     ]);
+            // }
             else
             {
 
@@ -1329,5 +1322,57 @@ class ChefController extends Controller
             ]);
         }
     }
-    
+
+    /**
+     * This is use for get list of foods added by Restorant (chef)
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function myfoodlist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user->id;
+
+            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')");
+            $data = $myfoods;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'My foods found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    // public function fooddetail(Request $request)
+    // {
+    //     $user = User::where(['api_token' => $request->api_token])->first();
+    //     if($user)
+    //     {
+    //         // user id is chef id
+    //         $user_id = $user->id;
+    //         $item_id = $request->item_id;
+    //         return response()->json([
+    //             'status' => true,
+    //             'data' => $data,
+    //             'succMsg' => 'My foods found successfully.'
+    //         ]);
+    //     }
+    //     else
+    //     {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errMsg' => 'Invalid token'
+    //         ]);
+    //     }
+    // }
 }
