@@ -568,6 +568,7 @@ class RestorantController extends Controller
           //https://accounts.google.com/DisplayUnlockCaptcha
          // Setup your gmail mailer
 
+    try{
          $transport = (new Swift_SmtpTransport('smtp.dreamhost.com', 465))
          ->setUsername("support@dev.halal.masumparvej.me")
          ->setPassword("wr9l9HbCaaclgwuazz");
@@ -584,7 +585,7 @@ class RestorantController extends Controller
     }catch(\Swift_TransportException $e){
          $response = $e->getMessage() ;
          echo $response;
-      }
+    }
 
 
         exit("Testing the Swift mailer functionality");
