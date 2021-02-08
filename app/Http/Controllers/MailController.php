@@ -14,10 +14,10 @@ class MailController extends Controller {
       Mail::send(['text'=>'mail'], $data, function($message) {
          $message->to('lr.testdemo@gmail.com', 'Logic Rays')->subject
             ('Laravel Basic Testing Mail');
-         $message->from('xyz@gmail.com','Bhavin Solanki');
+         $message->from('support@dev.halal.masumparvej.me','Bhavin Solanki');
       });
+
       echo "Basic Email Sent. Check your inbox.";
-      exit();
    }
 
    public function html_email() {
@@ -25,7 +25,7 @@ class MailController extends Controller {
       Mail::send('mail', $data, function($message) {
          $message->to('lr.testdemo@gmail.com', 'Logic Rays')->subject
             ('Laravel HTML Testing Mail');
-         $message->from('xyz@gmail.com','Bhavin Solanki');
+         $message->from('support@dev.halal.masumparvej.me','Bhavin Solanki');
       });
       echo "HTML Email Sent. Check your inbox.";
    }
