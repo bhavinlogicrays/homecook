@@ -7,6 +7,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 class MailController extends Controller {
+   
    public function basic_email() {
       $data = array('name'=>"Bhavin Solanki");
    
@@ -16,7 +17,9 @@ class MailController extends Controller {
          $message->from('xyz@gmail.com','Bhavin Solanki');
       });
       echo "Basic Email Sent. Check your inbox.";
+      exit();
    }
+
    public function html_email() {
       $data = array('name'=>"Bhavin Solanki");
       Mail::send('mail', $data, function($message) {
@@ -26,6 +29,7 @@ class MailController extends Controller {
       });
       echo "HTML Email Sent. Check your inbox.";
    }
+
    public function attachment_email() {
       $data = array('name'=>"Bhavin Solanki");
       Mail::send('mail', $data, function($message) {
@@ -37,4 +41,5 @@ class MailController extends Controller {
       });
       echo "Email Sent with attachment. Check your inbox.";
    }
+
 }
