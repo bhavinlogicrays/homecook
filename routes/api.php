@@ -71,6 +71,7 @@ Route::post('/reviewlist', 'ChefController@reviewlist')->name('chef.reviewlist')
 Route::post('/userprofile', 'ChefController@userprofile')->name('chef.userprofile');
 Route::post('/updateuserprofile', 'ChefController@updateuserprofile')->name('chef.updateuserprofile');
 Route::post('/myfoodlist', 'ChefController@myfoodlist')->name('chef.myfoodlist');
+Route::post('/test', 'RestorantController@myfoodlist')->name('restorants.test');
 
 
 //Route::post('send-sms','SmsController@store');
