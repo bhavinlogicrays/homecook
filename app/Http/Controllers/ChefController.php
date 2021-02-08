@@ -439,7 +439,7 @@ class ChefController extends Controller
                 'city' => ['required', 'string', 'min:2'],
                 'postcode' => ['required', 'integer'],
                 'address' => ['required', 'string'/*, 'min:8'*/],
-                'service_type' => ['required', 'integer'],
+                'service_type' => ['required'],
                 
                 'is_cooking_passionate' => ['required', 'integer'],
                 'hours_from' => ['required', 'string'],
@@ -485,8 +485,8 @@ class ChefController extends Controller
                     
                 $restorant->user_id = $chef->id;
                 
-                $restorant->can_pickup = $request->service_type;
-                $restorant->can_deliver = !$request->service_type;
+                $restorant->can_pickup = ($request->service_type=='Pickup') ? 1 : 0;
+                $restorant->can_deliver = ($request->service_type=='Deliver') ? 1 : 0;
                 $restorant->is_cooking_passionate = $request->is_cooking_passionate;
                 
                 if($request->hasFile('certificate')){
@@ -1188,12 +1188,11 @@ class ChefController extends Controller
             $user_id = $user[0]->id;
 
             $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, 'https://www.dev.halal.masumparvej.me/uploads/settings/no-image.png' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."'");
-            // echo Storage::url();
-            // foreach($reviews as &$review)
-            // {
-            //     $image_url = public_path().'/uploads/settings/'.$review->image;
-            //     $review->image = $image_url;
-            // }
+            foreach($reviews as &$review)
+            {
+                $image_url = url('/uploads/settings/no-image.png');
+                $review->image = $image_url;
+            }
             $data = array();
             $data['reviews'] = $reviews;
             return response()->json([
@@ -1259,58 +1258,67 @@ class ChefController extends Controller
                 'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
             ]);
 
-            $user_email_exist = User::where(['email' => $user->email])->whereNotIn('id', [$user->id])->first();
-            // $user_name_exist = User::where(['name' => $user->name])->whereNotIn('id', [$user->id])->first();
-            if($user_email_exist)
+            if(!$validator->fails())
             {
-                return response()->json([
-                    'status' => true,
-                    'errMsg' => 'This email id is not available.'
-                ]);
+                $user_email_exist = User::where(['email' => $user->email])->whereNotIn('id', [$user->id])->first();
+                $restorant_name_exist = Restorant::where(['name' => $request->name])->whereNotIn('user_id', [$user->id])->first();
+                if($user_email_exist)
+                {
+                    return response()->json([
+                        'status' => true,
+                        'errMsg' => 'This email id is not available.'
+                    ]);
+                }
+                elseif($restorant_name_exist)
+                {
+                    return response()->json([
+                        'status' => true,
+                        'errMsg' => 'This Name is not available.'
+                    ]);
+                }
+                else
+                {
+                    $restorant = Restorant::where(['user_id'=>$user->id])->first();
+                    $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
+
+                    DB::table('users')
+                        ->where(['id' => $user->id])
+                        ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+
+                    DB::table('restorants')
+                        ->where(['id' => $restorant->id])
+                        ->update(['name' => $request->name, 'phone' => $request->phone]);
+
+                    DB::table('hours')
+                        ->where(['id' => $hours->id])
+                        ->update([
+                                    '0_from'=>$request->hours_from, '0_to'=>$request->hours_to,
+                                    '1_from'=>$request->hours_from, '1_to'=>$request->hours_to,
+                                    '2_from'=>$request->hours_from, '2_to'=>$request->hours_to,
+                                    '3_from'=>$request->hours_from, '3_to'=>$request->hours_to,
+                                    '4_from'=>$request->hours_from, '4_to'=>$request->hours_to,
+                                    '5_from'=>$request->hours_from, '5_to'=>$request->hours_to,
+                                    '6_from'=>$request->hours_from, '6_to'=>$request->hours_to,
+                                    'updated_at'=>date("Y-m-d H:i:s")
+                                ]);
+
+                    $updated_user = User::where(['id' => $user->id])->first();
+                    $data = array();
+                    $data['name'] = $updated_user->name;
+                    $data['email'] = $updated_user->email;
+                    $data['phone'] = $updated_user->phone;
+                    return response()->json([
+                        'status' => true,
+                        'data' => $data,
+                        'succMsg' => 'User Profile found successfully.'
+                    ]);
+                }
             }
-            // elseif($user_name_exist)
-            // {
-            //     return response()->json([
-            //         'status' => true,
-            //         'errMsg' => 'This Name is not available.'
-            //     ]);
-            // }
             else
             {
-
-                $restorant = Restorant::where(['user_id'=>$user->id])->first();
-                $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
-
-                DB::table('users')
-                    ->where(['id' => $user->id])
-                    ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
-
-                DB::table('restorants')
-                    ->where(['id' => $restorant->id])
-                    ->update(['name' => $request->name, 'phone' => $request->phone]);
-
-                DB::table('hours')
-                    ->where(['id' => $hours->id])
-                    ->update([
-                                '0_from'=>$request->hours_from, '0_to'=>$request->hours_to,
-                                '1_from'=>$request->hours_from, '1_to'=>$request->hours_to,
-                                '2_from'=>$request->hours_from, '2_to'=>$request->hours_to,
-                                '3_from'=>$request->hours_from, '3_to'=>$request->hours_to,
-                                '4_from'=>$request->hours_from, '4_to'=>$request->hours_to,
-                                '5_from'=>$request->hours_from, '5_to'=>$request->hours_to,
-                                '6_from'=>$request->hours_from, '6_to'=>$request->hours_to,
-                                'updated_at'=>date("Y-m-d H:i:s")
-                            ]);
-
-                $updated_user = User::where(['id' => $user->id])->first();
-                $data = array();
-                $data['name'] = $updated_user->name;
-                $data['email'] = $updated_user->email;
-                $data['phone'] = $updated_user->phone;
                 return response()->json([
-                    'status' => true,
-                    'data' => $data,
-                    'succMsg' => 'User Profile found successfully.'
+                    'status' => false,
+                    'errMsg' => $validator->errors()
                 ]);
             }
         }
@@ -1325,7 +1333,9 @@ class ChefController extends Controller
 
     /**
      * This is use for get list of foods added by Restorant (chef)
-     * 
+     * @param api_token
+     * @param food_type
+     *
      * @return \Illuminate\Http\Response
      */
     public function myfoodlist(Request $request)
@@ -1335,11 +1345,21 @@ class ChefController extends Controller
         {
             // user id is chef id
             $user_id = $user->id;
+            $where = "";
+            if($request->food_type)
+            {
+                $where = " AND food_type='".$request->food_type."'";
+            }
 
-            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')");
+            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')".$where);
+            foreach ($myfoods as $key => &$myfood) {
+                $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
             $data = $myfoods;
+            $food_type = array('Breafast', 'Lunch', 'Dinner');
             return response()->json([
                 'status' => true,
+                'food_type' => $food_type,
                 'data' => $data,
                 'succMsg' => 'My foods found successfully.'
             ]);
@@ -1353,26 +1373,123 @@ class ChefController extends Controller
         }
     }
 
-    // public function fooddetail(Request $request)
-    // {
-    //     $user = User::where(['api_token' => $request->api_token])->first();
-    //     if($user)
-    //     {
-    //         // user id is chef id
-    //         $user_id = $user->id;
-    //         $item_id = $request->item_id;
-    //         return response()->json([
-    //             'status' => true,
-    //             'data' => $data,
-    //             'succMsg' => 'My foods found successfully.'
-    //         ]);
-    //     }
-    //     else
-    //     {
-    //         return response()->json([
-    //             'status' => false,
-    //             'errMsg' => 'Invalid token'
-    //         ]);
-    //     }
-    // }
+    /**
+     * This is use for get details of food item added by Restorant (chef)
+     * @param api_token
+     * @param item_id
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function fooddetail(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'item_id' => ['required', 'integer'],
+            ]);
+            if(!$validator->fails()) {
+                // user id is chef id
+                $user_id = $user->id;
+                $item_id = $request->item_id;
+                $item = Items::where(['id' => $item_id])->first();
+                $category = $item->category;
+
+                $data = array();
+                $data['id'] = $item->id;
+                $data['name'] = $item->name;
+                $data['description'] = $item->description;
+                $data['image'] = $item->image;
+                $data['price'] = $item->price;
+                $data['category'] = $category->name;
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'My foods found successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get details of food item added by Restorant (chef)
+     * @param api_token
+     * @param item_id
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function updatefooddetail(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'item_id' => ['required', 'integer'],
+                'item_name' => ['required'],
+                'price' => ['required', 'numeric'],
+                'estimated_time' => ['required'],
+                'description' => ['required'],
+            ]);
+            if(!$validator->fails())
+            {
+                $item_id = $request->item_id;
+                $item = Items::find($item_id);
+                $item->name = $request->item_name;
+                $item->price = $request->price;
+                // $item->estimated_time = $request->estimated_time;
+                $item->description = $request->description;
+
+                if($request->hasFile('image')) {
+                    $item->image = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image = url('public/'.$this->imagePath.$item->image);
+                }
+                $item->save();
+
+                $item = Items::find($item_id);
+                $data = array();
+                $data['item'] = $item;
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'My foods found successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
 }
