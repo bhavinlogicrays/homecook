@@ -587,7 +587,8 @@ class RestorantController extends Controller
 
     }catch(\Swift_TransportException $e){
          $response = $e->getMessage() ;
-         echo $response;
+         print_r($response) ;
+         exit("In Error block");
     }
 
 
