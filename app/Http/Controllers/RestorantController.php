@@ -556,13 +556,14 @@ class RestorantController extends Controller
     }
 
     public function test(){
+
         $user = User::findOrFail($id);
-
         Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
-            $m->from('hello@app.com', 'Your Application');
-
+            $m->from('lr.testdemo@gmail.com', 'Your Application');
             $m->to($user->email, $user->name)->subject('Your Reminder!');
         });
+        exit("Testing the Swift mailer functionality");
+        
     }
 
 }
