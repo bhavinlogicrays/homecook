@@ -560,26 +560,15 @@ class RestorantController extends Controller
     }
 
     public function test(){
-        // $id = 1;
-        // $user = User::findOrFail($id);
-        // Mail::send('emails.reminder', ['user' => array('bhavin solanki')], function ($m) use ($user) {
-        //     $m->from('lr.testdemo@gmail.com', 'Your Application');
-        //     $m->to('Bhavin', 'Solanki')->subject('Your Reminder!');
-        // });
 
-
-          //https://accounts.google.com/DisplayUnlockCaptcha
-         // Setup your gmail mailer
-
-
-//     MAIL_DRIVER=smtp
-// MAIL_HOST=smtp.dreamhost.com
-// MAIL_PORT=465
-// MAIL_USERNAME=support@dev.halal.masumparvej.me
-// MAIL_PASSWORD=wr9l9HbCaaclgwuazz
-// MAIL_ENCRYPTION=ssl
-// MAIL_FROM_ADDRESS=support@dev.halal.masumparvej.me
-// MAIL_FROM_NAME=HomeCookdook'd    
+    // MAIL_DRIVER=smtp
+    // MAIL_HOST=smtp.dreamhost.com
+    // MAIL_PORT=465
+    // MAIL_USERNAME=support@dev.halal.masumparvej.me
+    // MAIL_PASSWORD=wr9l9HbCaaclgwuazz
+    // MAIL_ENCRYPTION=ssl
+    // MAIL_FROM_ADDRESS=support@dev.halal.masumparvej.me
+    // MAIL_FROM_NAME=HomeCookdook'd    
 
     try{
          $transport = (new \Swift_SmtpTransport('smtp.dreamhost.com', 465))
@@ -589,15 +578,16 @@ class RestorantController extends Controller
          $mailer = new \Swift_Mailer($transport);
 
          $message = (new \Swift_Message('Reset Password'))
-         ->setFrom(['support@dev.halal.masumparvej.me' => 'LogicRays'])
-         ->setTo(['lr.testdemo@gmail.com' => 'Chef'])
+         ->setFrom(['support@dev.halal.masumparvej.me'])
+         ->setTo(['lr.testdemo@gmail.com'])
          ->setBody('Here is the message itself');
          $result = $mailer->send($message);
 
 
     }catch(\Swift_TransportException $e){
-         $response = $e->getMessage() ;
-         print_r($response) ;
+         //$response = $e->getMessage() ;
+         echo '<pre>';
+         print_r($e) ;
          exit("In Error block");
     }
 
