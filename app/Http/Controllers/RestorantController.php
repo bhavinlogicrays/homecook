@@ -20,6 +20,7 @@ use DB;
 use Carbon\Carbon;
 use App\Events\CallWaiter;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Swift_SmtpTransport;
 
 //use Intervention\Image\Image;
 use Image;
@@ -556,15 +557,27 @@ class RestorantController extends Controller
     }
 
     public function test(){
+        // $id = 1;
+        // $user = User::findOrFail($id);
+        // Mail::send('emails.reminder', ['user' => array('bhavin solanki')], function ($m) use ($user) {
+        //     $m->from('lr.testdemo@gmail.com', 'Your Application');
+        //     $m->to('Bhavin', 'Solanki')->subject('Your Reminder!');
+        // });
 
-        $id = 1;
-       // $user = User::findOrFail($id);
-        Mail::send('emails.reminder', ['user' => array('bhavin solanki')], function ($m) use ($user) {
-            $m->from('lr.testdemo@gmail.com', 'Your Application');
-            $m->to('Bhavin', 'Solanki')->subject('Your Reminder!');
-        });
+         \Mail::setSwiftMailer($gmail);
+
+         // $data['emailto'] = $email_sender;
+         // $data['sender'] = $email_to;
+         //Sender dan Reply harus sama
+
+         $message = (new Swift_Message('Reset Password'))
+         ->setFrom([$email_sender => 'LogicRaysTech'])
+         ->setTo([$email_to , 'lr.testdemo@gmail.com' => 'Bhavin'])
+         ->setBody('Here is the message itself')
+             ;
+             $result = $mailer->send($message);
+             
         exit("Testing the Swift mailer functionality");
-
     }
 
 }
