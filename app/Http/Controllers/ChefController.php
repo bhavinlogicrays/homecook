@@ -22,6 +22,10 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
+use Swift_SmtpTransport;
+use Swift_Mailer;
+use Swift_Message;
+use Swift_TransportException;
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -430,6 +434,38 @@ class ChefController extends Controller
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
 
+            if($request->mail_test==1)
+            {
+                try {
+
+                    $chef->name = "chef name";
+                    $randomOTPNumber = mt_rand(1000,9999);
+                    $subject = "HomeCook Registration OTP";
+                    $msg  = "<p>Hello " . $chef->name . ",</p>";
+                    $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
+                    $msg .= "<p>Thanks & Regards,</p>";
+                    $msg .= "Team HomeCook";
+                    $transport = (new \Swift_SmtpTransport(env('MAIL_HOST'), env('MAIL_PORT')))
+                                        ->setUsername(env('MAIL_USERNAME'))
+                                        ->setPassword(env('MAIL_PASSWORD'));
+
+                    $mailer = new \Swift_Mailer($transport);
+
+                    $message = (new \Swift_Message($subject))
+                                        ->setFrom([env('MAIL_FROM_ADDRESS')])
+                                        ->setTo([$request->email])
+                                        ->setBody($msg);
+
+                    $result = $mailer->send($message);
+                } catch(\Swift_TransportException $e) {
+                    //$response = $e->getMessage();
+                    // echo '<pre>';
+                    print_r($e);
+                    // echo '</pre>';
+                    exit("In Error block");
+                }
+                exit;
+            }
             $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'email', 'unique:users', 'max:255'],
@@ -1360,7 +1396,7 @@ class ChefController extends Controller
             // user id is chef id
             $user_id = $user->id;
             $where = "";
-            if($request->food_type)
+            if($request->food_type!="" && $request->food_type!="All")
             {
                 $where = " AND food_type='".$request->food_type."'";
             }
@@ -1370,7 +1406,7 @@ class ChefController extends Controller
                 $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = $myfoods;
-            $food_type = array('Breafast', 'Lunch', 'Dinner');
+            $food_type = array('Breakfast', 'Lunch', 'Dinner');
             return response()->json([
                 'status' => true,
                 'food_type' => $food_type,
@@ -1409,6 +1445,9 @@ class ChefController extends Controller
                 $item = Items::where(['id' => $item_id])->first();
                 $category = $item->category;
 
+                $item_ingredients = array('1', '3', '4', '7','8');
+                $all_ingredients = $this->getAllIngredients($item_ingredients);
+
                 $data = array();
                 $data['id'] = $item->id;
                 $data['name'] = $item->name;
@@ -1416,6 +1455,7 @@ class ChefController extends Controller
                 $data['image'] = $item->image;
                 $data['price'] = $item->price;
                 $data['category'] = $category->name;
+                $data['all_ingredients'] = $all_ingredients;
                 return response()->json([
                     'status' => true,
                     'data' => $data,
@@ -1440,7 +1480,7 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use for get details of food item added by Restorant (chef)
+     * This is use for update details of food item added by Restorant (chef)
      * @param api_token
      * @param item_id
      *
@@ -1466,6 +1506,7 @@ class ChefController extends Controller
                 $item->price = $request->price;
                 // $item->estimated_time = $request->estimated_time;
                 $item->description = $request->description;
+                // $item->ingredients = $request->ingredients;
 
                 if($request->hasFile('image')) {
                     $item->image = $this->saveImageVersions(
@@ -1507,6 +1548,16 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use for add new food item by Restorant (chef)
+     * @param api_token
+     * @param item_name
+     * @param price
+     * @param estimated_time
+     * @param description
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function addnewfooditem(Request $request)
     {
         $user = User::where(['api_token' => $request->api_token])->first();
@@ -1569,5 +1620,63 @@ class ChefController extends Controller
                 'errMsg' => 'Invalid token'
             ]);
         }
+    }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function ingredientslist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $ingredients = $this->getAllIngredients();
+            $data = array();
+            $data['ingredients'] = $ingredients;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'New food item added successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get all ingredients
+     *
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getAllIngredients($item_ingredients=array())
+    {
+        $image_url = url('/uploads/settings/no-image.png');
+        $ingredients = array();
+        $ingredients['Basic'] = array(
+                                    array('id'=>'1', 'name'=>'Salt', 'image'=>$image_url, "is_selected"=>(in_array('1', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'2', 'name'=>'Chicken', 'image'=>$image_url, "is_selected"=>(in_array('2', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'3', 'name'=>'Onion', 'image'=>$image_url, "is_selected"=>(in_array('3', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'4', 'name'=>'Garlic', 'image'=>$image_url, "is_selected"=>(in_array('4', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'5', 'name'=>'Pappers', 'image'=>$image_url, "is_selected"=>(in_array('5', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'6', 'name'=>'Ginger', 'image'=>$image_url, "is_selected"=>(in_array('6', $item_ingredients)) ? 1 : 0),
+                                );
+        $ingredients['Fruit'] = array(
+                                    array('id'=>'7', 'name'=>'Avocado', 'image'=>$image_url, "is_selected"=>(in_array('7', $item_ingredients)) ? 1 : 0), 
+                                    array('id'=>'8', 'name'=>'Apple', 'image'=>$image_url, "is_selected"=>(in_array('8', $item_ingredients)) ? 1 : 0), 
+                                    array('id'=>'9', 'name'=>'Bluberry', 'image'=>$image_url, "is_selected"=>(in_array('9', $item_ingredients)) ? 1 : 0), 
+                                    array('id'=>'10', 'name'=>'Broccoli', 'image'=>$image_url, "is_selected"=>(in_array('10', $item_ingredients)) ? 1 : 0), 
+                                    array('id'=>'11', 'name'=>'Orange', 'image'=>$image_url, "is_selected"=>(in_array('11', $item_ingredients)) ? 1 : 0),
+                                    array('id'=>'12', 'name'=>'Walnut', 'image'=>$image_url, "is_selected"=>(in_array('12', $item_ingredients)) ? 1 : 0),
+                                );
+        return $ingredients;
     }
 }
