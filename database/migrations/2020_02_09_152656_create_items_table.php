@@ -18,10 +18,18 @@ class CreateItemsTable extends Migration
             $table->string('name');
             $table->string('description',455);
             $table->string('image');
+            $table->string('image2');
+            $table->string('image3');
+            $table->string('image4');
             $table->float('price');
             $table->unsignedBigInteger('category_id');
             $table->timestamps();
             $table->foreign('category_id')->references('id')->on('categories');
+
+            $table->unsignedBigInteger('restorant_id');
+            $table->foreign('restorant_id')->references('id')->on('restorants');
+            $table->enum('food_type', ['breakfast', 'lunch', 'dinner', 'drink']);
+            $table->time("estimated_time");
         });
     }
 
