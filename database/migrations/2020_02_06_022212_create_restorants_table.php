@@ -16,7 +16,7 @@ class CreateRestorantsTable extends Migration
         Schema::create('restorants', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->timestamps();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('subdomain')->unique();
             $table->string('logo')->default("");
             $table->string('cover')->default("");

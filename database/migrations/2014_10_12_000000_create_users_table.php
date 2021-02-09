@@ -27,6 +27,7 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->boolean('active')->default(1);
+            $table->string('profile_pic')->nullable();
         });
     }
 
