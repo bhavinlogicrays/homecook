@@ -119,6 +119,12 @@ class ChefController extends Controller
         return redirect()->route('clients.index')->withStatus(__('Client successfully deleted.'));
     }
 
+    /**
+     * This is use to get Restorants
+     *
+     * @param  int $city_id
+     * @return \Illuminate\Http\Response
+     */
     public function getRestorants($city_id="none")
     {
         if($city_id=="none"){
@@ -142,6 +148,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get Restorants Items
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
     public function getRestorantItems($id)
     {
         $restorant = Restorant::where(['id' => $id, 'active' => 1])->with(['categories.items.variants.extras'])->first();
@@ -182,6 +194,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get MyNotifications
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyNotifications(){
         $client = User::where(['api_token' => $_GET['api_token']])->first();
 
@@ -199,6 +216,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to get MyOrders
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyOrders()
     {
         $client = User::where(['api_token' => $_GET['api_token']])->first();//->with(['orders']);
@@ -210,7 +232,6 @@ class ChefController extends Controller
             ]);
         }
 
-
         //Get client orders
         $orders=Order::where("client_id",$client->id)->orderBy('created_at','DESC')->limit(50)->with(['restorant','status','items','address','driver'])->get();
 
@@ -221,6 +242,12 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to MyAddressesForRestaurtant
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddressesForRestaurtant($restaurant_id){
         $restaurant = Restorant::findOrFail($restaurant_id);
         $address=$this->getAccessibleAddresses(User::where(['api_token' => $_GET['api_token']])->with(['addresses'])->first(),$restaurant);
@@ -240,6 +267,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to getMyAddressesWithFees
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddressesWithFees($restaurant_id)
     {
         $restaurant = Restorant::findOrFail($restaurant_id);
@@ -270,17 +303,18 @@ class ChefController extends Controller
         }
     }
 
-
-
+    /**
+     * This is use to getMyAddresses
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMyAddresses()
     {
         $client = User::where(['api_token' => $_GET['api_token']])->with(['addresses'])->first();
 
         if(!$client->addresses->isEmpty()){
 
-
-            //For each clinet address calcualte the price
-            
+            //For each clinet address calcualte the price            
             return response()->json([
                 'data' => $client->addresses,
                 'status' => true,
@@ -296,6 +330,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to Create the address
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function makeAddress(Request $request)
     {
         $client = User::where(['api_token' => $request->api_token])->first();
@@ -317,6 +356,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to delete the address
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function deleteAddress(Request $request)
     {
         $client = User::where(['api_token' => $request->api_token])->first();
@@ -339,6 +383,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get token
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getToken(Request $request)
     {
         $user = User::where(['active'=>1,'email'=>$request->email])->first();
@@ -372,6 +421,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to register the user
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function register(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -384,8 +438,8 @@ class ChefController extends Controller
 
                 'city' => ['required', 'string', 'min:2'],
                 'postcode' => ['required', 'integer'],
-                'address' => ['required', 'string', 'min:8'],
-                'service_type' => ['required', 'integer'],
+                'address' => ['required', 'string'/*, 'min:8'*/],
+                'service_type' => ['required'],
                 
                 'is_cooking_passionate' => ['required', 'integer'],
                 'hours_from' => ['required', 'string'],
@@ -431,8 +485,8 @@ class ChefController extends Controller
                     
                 $restorant->user_id = $chef->id;
                 
-                $restorant->can_pickup = $request->service_type;
-                $restorant->can_deliver = !$request->service_type;
+                $restorant->can_pickup = ($request->service_type=='Pickup') ? 1 : 0;
+                $restorant->can_deliver = ($request->service_type=='Deliver') ? 1 : 0;
                 $restorant->is_cooking_passionate = $request->is_cooking_passionate;
                 
                 if($request->hasFile('certificate')){
@@ -539,6 +593,12 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to login by using Facebook
+     * @param  int $restaurant_id
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function loginFacebook(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -578,6 +638,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to login by Google
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function loginGoogle(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -617,7 +682,9 @@ class ChefController extends Controller
     }
 
     /**
-     * Make order from mobile api
+     * This is use to make a new order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function makeOrder(Request $request)
     {
@@ -722,6 +789,11 @@ class ChefController extends Controller
         ]);
     }
 
+    /**
+     * This is use to get settings
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getSettings(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
@@ -765,6 +837,11 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use to get User Data
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getUseData()
     {
         $user = User::where(['api_token' => $_GET['api_token']])->first();
@@ -789,10 +866,13 @@ class ChefController extends Controller
 
     /**
      * This is use to get the list of required orders
+     *
      * Requested Order
      * Running Order
      * Done Order
      * Cancel Order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function orderlist(Request $request){
 
@@ -802,63 +882,6 @@ class ChefController extends Controller
             $restorantId = $user->id;
 
             $items = $this->getOrderList($restorantId, $request->order_type);
-            // $orders = Order::orderBy('created_at','desc');
-
-            // //$restorant_id = auth()->user()->restorant->id;
-
-            // $orders =$orders->where(['restorant_id' => $restorantId]);
-            // $dashboardOrderCount = $orders->get()->count();
-
-            // switch ($request->order_type) {
-            //     case 'requested_order':
-            //             $alias = 'just_created';
-            //         break;
-            //     case 'runing_order':
-            //             $alias = 'accepted_by_restaurant';
-            //         break;                
-            //     case 'done_order':
-            //             $alias = 'closed';
-            //         break;                
-            //     case 'cancel_order':
-            //             $alias = 'rejected_by_restaurant';
-            //         break;                
-            //     default:
-            //         $alias = 'just_created';
-            //         break;
-            // }
-
-            // $items=array();
-            // foreach ($orders->get() as $key => $order) {
-            //     if($order->status->pluck('alias')->last() == $alias){
-            //             $item=array(
-            //                 "order_id"=>$order->id,
-            //                 "chef_name"=>$order->restorant->name,
-            //                 "chef_id"=>$order->restorant_id,
-            //                 "created"=>$order->created_at,
-            //                 "last_status"=>$order->status->pluck('alias')->last(),
-            //                 "client_name"=>$order->client?$order->client->name:"",
-            //                 "client_id"=>$order->client?$order->client_id:null,
-            //                 "table_name"=>$order->table?$order->table->name:"",
-            //                 "table_id"=>$order->table?$order->table_id:null,
-            //                 "area_name"=>$order->table&&$order->table->restoarea?$order->table->restoarea->name:"",
-            //                 "area_id"=>$order->table&&$order->table->restoarea?$order->table->restoarea->id:null,
-            //                 "address"=>$order->address?$order->address->address:"",
-            //                 "address_id"=>$order->address_id,
-            //                 //"driver_name"=>$order->driver?$order->driver->name:"",
-            //                 //"driver_id"=>$order->driver_id,
-            //                 "order_value"=>$order->order_price,
-            //                 "order_delivery"=>$order->delivery_price,
-            //                 "order_total"=>$order->delivery_price+$order->order_price,
-            //                 'payment_method'=>$order->payment_method,
-            //                 'srtipe_payment_id'=>$order->srtipe_payment_id,
-            //                 //'order_fee'=>$order->fee_value,
-            //                 //'restaurant_fee'=>$order->fee,
-            //                 //'restaurant_static_fee'=>$order->static_fee,
-            //                 //'vat'=>$order->vatvalue
-            //               );
-            //             array_push($items,$item);
-            //         }
-            // }
 
             return response()->json([
                 'data' => $items,
@@ -876,15 +899,17 @@ class ChefController extends Controller
 
     /**
      * This is use change the status of order
+     *
      * Chef will change the status of order
      * Accepted order
      * Done Order
      * Cancel Order
+     *
+     * @return \Illuminate\Http\Response
      */
     public function changeorderstatus(Request $request){
 
         $user = User::where(['api_token' => $request->api_token])->first();
-        
         if($user){
 
             switch ($request->order_status) {
@@ -902,13 +927,16 @@ class ChefController extends Controller
                     break;
             }
 
+            $orders = Order::where(['id' => $request->order_id])->get()->first();
+
             $status = Status::select('id', 'alias')->where(['alias' => $alias])->get()->first();
             
             if(!empty($status)){
+                // order_has_status table having user_id and this user id is client_id ( customr id not ChefId) 
                 DB::table('order_has_status')
-                        ->where(['order_id' => $request->order_id, 'user_id' => $user->id])
+                        //->where(['order_id' => $request->order_id, 'user_id' => $orders->client_id])
+                        ->where(['order_id' => $request->order_id])
                         ->update(['status_id' => $status->id]);
-                
                 return response()->json([
                     'status' => true,
                     'succMsg' => 'Order status change successfully'
@@ -930,14 +958,22 @@ class ChefController extends Controller
 
     /**
      * This is use for display chef dashboard view
-     * 
+     *
+     * Running Order Count
+     * Requested Order Count
+     * Total Revenue
+     * Revenue Graph
+     * Rating count and average
+     * Popuar Items List
+     *
+     * @return \Illuminate\Http\Response
      */
-    public function chefdashboardview(Request $request){
-        $user = DB::select("SELECT * from users WHERE api_token='".$request->api_token."'");
+    public function chefdashboardview(Request $request) {
+        $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
-            $user_id = $user[0]->id;
-            $user_id = 1;
+            // user id is chef id
+            $user_id = $user->id;
             $runing_order = $this->getOrderList($user_id, "runing_order");
             $runing_order_count = count($runing_order);
 
@@ -951,7 +987,7 @@ class ChefController extends Controller
                 $total_revenue = number_format($revenue[0]->revenue, 2);
             }
             //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
-            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%H%A') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%h%p') AS added_date FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
 
             $reviews = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
             $review_data['rating_average'] = $reviews[0]->rating_average;
@@ -960,6 +996,11 @@ class ChefController extends Controller
             //  AND o.created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
             $popular_items = DB::select("SELECT SUM(ohi.qty) sale_count, i.id, i.image, i.name, i.price, i.vat FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id ORDER BY SUM(ohi.qty) DESC");
 
+            $popularItemsWithImage = array();
+            foreach ($popular_items as $key => &$popularItem) {
+                $popularItem->image = Items::getImge($popularItem->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
+      
             $data['total_runing_order'] = $runing_order_count;
             $data['total_requested_order'] = $requested_order_count;
             $data['total_revenue'] = $total_revenue;
@@ -969,7 +1010,7 @@ class ChefController extends Controller
             return response()->json([
                 'status' => true,
                 'data' => $data,
-                'succMsg' => 'Order status change successfully'
+                'succMsg' => 'Dashboard Data fetched successfully'
             ]);
         }
         else
@@ -981,6 +1022,14 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use get order list
+     *
+     * @param  int $restaurant_id
+     * @param  string $order_type
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getOrderList($restorantId, $order_type)
     {
         $orders = Order::orderBy('created_at','desc');
@@ -1029,15 +1078,496 @@ class ChefController extends Controller
                     "order_total"=>$order->delivery_price+$order->order_price,
                     'payment_method'=>$order->payment_method,
                     'srtipe_payment_id'=>$order->srtipe_payment_id,
+                    'item_name'=>'',
+                    'item_image'=>'',
                     //'order_fee'=>$order->fee_value,
                     //'restaurant_fee'=>$order->fee,
                     //'restaurant_static_fee'=>$order->static_fee,
                     //'vat'=>$order->vatvalue
                 );
+                if($order->items->isNotEmpty())
+                {
+                    $item['item_name'] = $order->items[0]->name;
+                    $item['item_image'] = $order->items[0]->icon;
+                }
                 array_push($items,$item);
             }
         }
         return $items;
     }
 
+    /**
+     * This is use for display chef revenue
+     *
+     * Total Revenue
+     * Revenue Graph
+     * Rating count and average
+     * Popuar Items List
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function revenuelist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user->id;
+            
+            $revenue = DB::select("SELECT sum(order_price) AS revenue FROM `orders` WHERE `restorant_id`='".$user_id."' GROUP BY restorant_id");
+            $total_revenue = number_format(0, 2);
+            if($revenue)
+            {
+                $total_revenue = number_format($revenue[0]->revenue, 2);
+            }
+            //  AND created_at >= (DATE(NOW()) - INTERVAL 7 DAY)
+            $revenue_list = DB::select("SELECT ROUND(sum(order_price), 2) AS revenue, COUNT(id) AS total_count, DATE_FORMAT(created_at, '%h%p') AS added_date FROM orders WHERE restorant_id='".$user_id."' GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d %H') ORDER BY created_at ASC");
+
+            $revenue_item_list = DB::select("SELECT i.id, i.name, i.image, c.name AS category_name, COUNT(ohi.item_id) AS item_sale_count FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id JOIN categories AS c ON c.id=i.category_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id");
+
+            foreach ($revenue_item_list as $key => &$revenue_item) {
+                $revenue_item->image = Items::getImge($revenue_item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
+            $data = array();
+            $data['total_revenue'] = $total_revenue;
+            $data['revenue_list'] = $revenue_list;
+            $data['item_list'] = $revenue_item_list;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'Revenue list found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use to reset the password
+     * Flow:
+     *
+     * 1. User enter forgot password email
+     * 2. User got OTP in mail
+     * 3. User come into Reset password screen after login
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function resetpassword(Request $request)
+    {
+        $user = User::where(['email' => $request->email])->first();
+        if($user)
+        {
+            DB::table('users')
+                    ->where(['email' => $request->email])
+                    ->update(['password' => Hash::make($request->password)]);
+            return response()->json([
+                'status' => true,
+                'succMsg' => 'Password Changed successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid email'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for display chef review/reting list
+     *
+     * reviews
+     * review_count
+     * @return \Illuminate\Http\Response
+     */
+    public function reviewlist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user->id;
+
+            $review_count = DB::select("SELECT ROUND(IFNULL(AVG(rating), 0), 2) AS rating_average, COUNT(id) AS rating_count FROM ratings WHERE rateable_id='".$user_id."'");
+            $review_data['rating_average'] = $review_count[0]->rating_average;
+            $review_data['rating_count'] = $review_count[0]->rating_count;
+
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."' ORDER BY r.created_at DESC, id DESC");
+            foreach($reviews as &$review)
+            {
+                $image_url = url('/uploads/settings/no-image.png');
+                $review->image = $image_url;
+            }
+            $data = array();
+            $data['reviews'] = $reviews;
+            $data['review_count'] = $review_data;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'Reviews found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get user profile information
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function userprofile(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user->id."'");
+            $start_time = "0_from";
+            $end_time = "0_to";
+            $data = array();
+            $data['id'] = $user->id;
+            $data['name'] = $user->name;
+            $data['email'] = $user->email;
+            $data['phone'] = $user->phone;
+            $data['hours_from'] = $hours[0]->$start_time;
+            $data['hours_to'] = $hours[0]->$end_time;
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'User Profile found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get user profile information
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function updateuserprofile(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'name' => ['required', 'string', 'max:255'],
+                'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
+            ]);
+
+            if(!$validator->fails())
+            {
+                $user_email_exist = User::where(['email' => $user->email])->whereNotIn('id', [$user->id])->first();
+                $restorant_name_exist = Restorant::where(['name' => $request->name])->whereNotIn('user_id', [$user->id])->first();
+                if($user_email_exist)
+                {
+                    return response()->json([
+                        'status' => true,
+                        'errMsg' => 'This email id is not available.'
+                    ]);
+                }
+                elseif($restorant_name_exist)
+                {
+                    return response()->json([
+                        'status' => true,
+                        'errMsg' => 'This Name is not available.'
+                    ]);
+                }
+                else
+                {
+                    $restorant = Restorant::where(['user_id'=>$user->id])->first();
+                    $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
+
+                    DB::table('users')
+                        ->where(['id' => $user->id])
+                        ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+
+                    DB::table('restorants')
+                        ->where(['id' => $restorant->id])
+                        ->update(['name' => $request->name, 'phone' => $request->phone]);
+
+                    DB::table('hours')
+                        ->where(['id' => $hours->id])
+                        ->update([
+                                    '0_from'=>$request->hours_from, '0_to'=>$request->hours_to,
+                                    '1_from'=>$request->hours_from, '1_to'=>$request->hours_to,
+                                    '2_from'=>$request->hours_from, '2_to'=>$request->hours_to,
+                                    '3_from'=>$request->hours_from, '3_to'=>$request->hours_to,
+                                    '4_from'=>$request->hours_from, '4_to'=>$request->hours_to,
+                                    '5_from'=>$request->hours_from, '5_to'=>$request->hours_to,
+                                    '6_from'=>$request->hours_from, '6_to'=>$request->hours_to,
+                                    'updated_at'=>date("Y-m-d H:i:s")
+                                ]);
+
+                    $updated_user = User::where(['id' => $user->id])->first();
+                    $data = array();
+                    $data['name'] = $updated_user->name;
+                    $data['email'] = $updated_user->email;
+                    $data['phone'] = $updated_user->phone;
+                    return response()->json([
+                        'status' => true,
+                        'data' => $data,
+                        'succMsg' => 'User Profile found successfully.'
+                    ]);
+                }
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get list of foods added by Restorant (chef)
+     * @param api_token
+     * @param food_type
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function myfoodlist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            // user id is chef id
+            $user_id = $user->id;
+            $where = "";
+            if($request->food_type)
+            {
+                $where = " AND food_type='".$request->food_type."'";
+            }
+
+            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')".$where);
+            foreach ($myfoods as $key => &$myfood) {
+                $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+            }
+            $data = $myfoods;
+            $food_type = array('Breafast', 'Lunch', 'Dinner');
+            return response()->json([
+                'status' => true,
+                'food_type' => $food_type,
+                'data' => $data,
+                'succMsg' => 'My foods found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get details of food item added by Restorant (chef)
+     * @param api_token
+     * @param item_id
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function fooddetail(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'item_id' => ['required', 'integer'],
+            ]);
+            if(!$validator->fails()) {
+                // user id is chef id
+                $user_id = $user->id;
+                $item_id = $request->item_id;
+                $item = Items::where(['id' => $item_id])->first();
+                $category = $item->category;
+
+                $data = array();
+                $data['id'] = $item->id;
+                $data['name'] = $item->name;
+                $data['description'] = $item->description;
+                $data['image'] = $item->image;
+                $data['price'] = $item->price;
+                $data['category'] = $category->name;
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'Food detail found successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get details of food item added by Restorant (chef)
+     * @param api_token
+     * @param item_id
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function updatefooddetail(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'item_id' => ['required', 'integer'],
+                'item_name' => ['required'],
+                'price' => ['required', 'numeric'],
+                'estimated_time' => ['required'],
+                'description' => ['required'],
+            ]);
+            if(!$validator->fails())
+            {
+                $item_id = $request->item_id;
+                $item = Items::find($item_id);
+                $item->name = $request->item_name;
+                $item->price = $request->price;
+                // $item->estimated_time = $request->estimated_time;
+                $item->description = $request->description;
+
+                if($request->hasFile('image')) {
+                    $item->image = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image = url('public/'.$this->imagePath.$item->image);
+                }
+                $item->save();
+
+                $item = Items::find($item_id);
+                $data = array();
+                $data['item'] = $item;
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'Food detail updated successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    public function addnewfooditem(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $validator = Validator::make($request->all(), [
+                'item_name' => ['required'],
+                'price' => ['required', 'numeric'],
+                'estimated_time' => ['required'],
+                'description' => ['required'],
+            ]);
+            if(!$validator->fails())
+            {
+                $restorant = Restorant::where(['user_id' => $user->id])->first();
+
+                $item = new Items;
+                $item->name = $request->item_name;
+                $item->description = $request->description;
+                if($request->hasFile('image')) {
+                    $item->image = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image = url('public/'.$this->imagePath.$item->image);
+                }
+                $item->price = $request->price;
+                // $item->estimated_time = $request->estimated_time;
+                $item->category_id = 1;
+                // $item->restorant_id = $restorant->id;
+                $item->created_at = date("Y-m-d H:i:s");
+                $item->updated_at = date("Y-m-d H:i:s");
+                $item->available = 1;
+                $item->has_variants = 0;
+                $item->vat = 0;
+                $item->save();
+                $data = array();
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'New food item added successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
 }

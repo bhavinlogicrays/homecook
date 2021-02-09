@@ -65,6 +65,15 @@ Route::post('/orderlist', 'ChefController@orderlist')->name('chef.orderlist');
 Route::post('/changeorderstatus', 'ChefController@changeorderstatus')->name('chef.changeorderstatus');
 
 Route::post('/chefdashboardview', 'ChefController@chefdashboardview')->name('chef.chefdashboardview');
+Route::post('/revenuelist', 'ChefController@revenuelist')->name('chef.revenuelist');
+Route::post('/resetpassword', 'ChefController@resetpassword')->name('chef.resetpassword');
+Route::post('/reviewlist', 'ChefController@reviewlist')->name('chef.reviewlist');
+Route::post('/userprofile', 'ChefController@userprofile')->name('chef.userprofile');
+Route::post('/updateuserprofile', 'ChefController@updateuserprofile')->name('chef.updateuserprofile');
+Route::post('/myfoodlist', 'ChefController@myfoodlist')->name('chef.myfoodlist');
+Route::post('/fooddetail', 'ChefController@fooddetail')->name('chef.fooddetail');
+Route::post('/updatefooddetail', 'ChefController@updatefooddetail')->name('chef.updatefooddetail');
+Route::post('/addnewfooditem', 'ChefController@addnewfooditem')->name('chef.addnewfooditem');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');
