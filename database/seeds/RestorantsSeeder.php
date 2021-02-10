@@ -202,6 +202,7 @@ class RestorantsTableSeeder extends Seeder
                         'description'=>isset($menuItem['description'])?$menuItem['description']:"",
                         'image'=>isset($menuItem['image'])?$menuItem['image']:"",
                         'price'=>isset($menuItem['price'])?$menuItem['price']:"",
+                        'restorant_id'=>$id,
                         'vat'=>21,
                         'category_id'=>$catId,
                         'created_at' => now(),
