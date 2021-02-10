@@ -22,10 +22,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
-use Swift_SmtpTransport;
-use Swift_Mailer;
-use Swift_Message;
-use Swift_TransportException;
+use Mail;
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -432,40 +429,7 @@ class ChefController extends Controller
      */
     public function register(Request $request)
     {
-        if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
-
-            if($request->mail_test==1)
-            {
-                try {
-
-                    $chef->name = "chef name";
-                    $randomOTPNumber = mt_rand(1000,9999);
-                    $subject = "HomeCook Registration OTP";
-                    $msg  = "<p>Hello " . $chef->name . ",</p>";
-                    $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                    $msg .= "<p>Thanks & Regards,</p>";
-                    $msg .= "Team HomeCook";
-                    $transport = (new \Swift_SmtpTransport(env('MAIL_HOST'), env('MAIL_PORT')))
-                                        ->setUsername(env('MAIL_USERNAME'))
-                                        ->setPassword(env('MAIL_PASSWORD'));
-
-                    $mailer = new \Swift_Mailer($transport);
-
-                    $message = (new \Swift_Message($subject))
-                                        ->setFrom([env('MAIL_FROM_ADDRESS')])
-                                        ->setTo([$request->email])
-                                        ->setBody($msg);
-
-                    $result = $mailer->send($message);
-                } catch(\Swift_TransportException $e) {
-                    //$response = $e->getMessage();
-                    // echo '<pre>';
-                    print_r($e);
-                    // echo '</pre>';
-                    exit("In Error block");
-                }
-                exit;
-            }
+        if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')) {
             $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'email', 'unique:users', 'max:255'],
@@ -579,18 +543,28 @@ class ChefController extends Controller
                     ->where('id', $chef->id)
                     ->update(['verification_code' => $randomOTPNumber]);
 
-                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers = "Content-Type: text/html; charset=UTF-8";
+                // $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
+                // $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
+                // $headers .= "MIME-Version: 1.0\r\n";
+                // $headers = "Content-Type: text/html; charset=UTF-8";
                    
                 $subject = "HomeCook Registration OTP";
-                $msg  = "<p>Hello " . $chef->name . ",</p>";
-                $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                $msg .= "<p>Thanks & Regards,</p>";
-                $msg .= "Team HomeCook";
+                // $msg  = "<p>Hello " . $chef->name . ",</p>";
+                // $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
+                // $msg .= "<p>Thanks & Regards,</p>";
+                // $msg .= "Team HomeCook";
                 //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-                mail($request->email, $subject, $msg, $headers);
+                // mail($request->email, $subject, $msg, $headers);
+
+                $param = array();
+                $param['subject'] = $subject;
+                $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                $param['to_name'] = $request->name;//'Logic Rays';
+                $data = array('chefname'=>$request->name, 'randomOTPNumber'=>$randomOTPNumber);
+                Mail::send('mail', $data, function($message) use ($param) {
+                    $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                    $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                });
 
                 return response()->json([
                     'status' => true,
@@ -1635,7 +1609,7 @@ class ChefController extends Controller
         {
             $ingredients = $this->getAllIngredients();
             $data = array();
-            $data['ingredients'] = $ingredients;
+            $data = $ingredients;
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -1679,4 +1653,32 @@ class ChefController extends Controller
                                 );
         return $ingredients;
     }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    // public function notificationlist(Request $request)
+    // {
+    //     $user = User::where(['api_token' => $request->api_token])->first();
+    //     if($user)
+    //     {
+    //         $user_id = $user->id;
+    //         $data = array();
+    //         return response()->json([
+    //             'status' => true,
+    //             'data' => $data,
+    //             'succMsg' => 'New food item added successfully.'
+    //         ]);
+    //     }
+    //     else
+    //     {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errMsg' => 'Invalid token'
+    //         ]);
+    //     }
+    // }
 }

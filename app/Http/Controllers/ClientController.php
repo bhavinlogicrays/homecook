@@ -20,6 +20,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
+use Mail;
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -678,18 +679,28 @@ class ClientController extends Controller
                     ->where('id', $user->id)
                     ->update(['verification_code' => $randomOTPNumber]);
 
-                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers = "Content-Type: text/html; charset=UTF-8";
+                // $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
+                // $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
+                // $headers .= "MIME-Version: 1.0\r\n";
+                // $headers = "Content-Type: text/html; charset=UTF-8";
                    
                 $subject = "HomeCook Forgot Password OTP";
-                $msg  = "<p>Hello " . $user->name . ",</p>";
-                $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                $msg .= "<p>Thanks & Regards,</p>";
-                $msg .= "Team HomeCook";
+                // $msg  = "<p>Hello " . $user->name . ",</p>";
+                // $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
+                // $msg .= "<p>Thanks & Regards,</p>";
+                // $msg .= "Team HomeCook";
                 //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-                mail($request->email, $subject, $msg, $headers);
+                // mail($request->email, $subject, $msg, $headers);
+                
+                $param = array();
+                $param['subject'] = $subject;
+                $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                $param['to_name'] = $user->name;//'Logic Rays';
+                $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
+                Mail::send('forgotpassword', $data, function($message) use ($param) {
+                    $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                    $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                });
 
                 return response()->json([
                     'status' => true,
