@@ -20,7 +20,7 @@ class CreateRestorantsTable extends Migration
             $table->string('subdomain')->unique();
             $table->string('logo')->default("");
             $table->string('cover')->default("");
-            $table->boolean('active')->default(1);
+            $table->boolean('active')->default(0);
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->string('lat');

@@ -189,7 +189,7 @@ final class Versions
   'sebastian/version' => '2.0.1@99732be0ddb3361e16ad77b68ba41efc8e979019',
   'theseer/tokenizer' => '1.2.0@75a63c33a8577608444246075ea0af0d052e452a',
   'webmozart/assert' => '1.9.1@bafc69caeb4d49c39fd0779086c03a3738cbb389',
-  'laravel/laravel' => 'dev-mihir/dev@41a539e8fcf7a64dce159bac2e740b9f63c021bc',
+  'laravel/laravel' => 'dev-mihir/dev@1cd8888ee7f49bab328422e90e64e8a529d7d7db',
 );
 
     private function __construct()

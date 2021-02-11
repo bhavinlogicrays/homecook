@@ -937,6 +937,7 @@ class ComposerStaticInit8fb82e94d3634c51c3b9525a01d18752
         'App\\Status' => __DIR__ . '/../..' . '/app/Status.php',
         'App\\Tables' => __DIR__ . '/../..' . '/app/Tables.php',
         'App\\User' => __DIR__ . '/../..' . '/app/User.php',
+        'App\\UserNotifications' => __DIR__ . '/../..' . '/app/UserNotifications.php',
         'App\\Visit' => __DIR__ . '/../..' . '/app/Visit.php',
         'ArithmeticError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/ArithmeticError.php',
         'AssertionError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/AssertionError.php',
