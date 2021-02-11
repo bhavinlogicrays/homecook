@@ -1450,6 +1450,25 @@ class ChefController extends Controller
                 }
                 $all_ingredients = $this->getAllIngredients($item, $item_ingredients_ids);
 
+                $item_images = array();
+                if(!empty($item->image))
+                {
+                    $item_images[] = Items::getImge($item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image2))
+                {
+                    $item_images[] = Items::getImge($item->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image3))
+                {
+                    $item_images[] = Items::getImge($item->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image4))
+                {
+                    $item_images[] = Items::getImge($item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                $item->image = $item_images;
+                
                 $data = array();
                 $data['id'] = $item->id;
                 $data['name'] = $item->name;
