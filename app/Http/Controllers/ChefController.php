@@ -23,7 +23,9 @@ use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
 use Illuminate\Validation\Rule;
-
+use Mail;
+use App\Ingredients;
+use App\ItemIngredients;
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -434,7 +436,7 @@ class ChefController extends Controller
 
             $existing = false;
 
-            // find existing users with unverified email
+            // find existing users with inactive status
             $validator_email = Validator::make($request->all(), [
                 'email' => [
                     'required',
@@ -444,18 +446,13 @@ class ChefController extends Controller
                     }),
                 ]
             ]);
-            // if unverified users, update with new data
+            
             $email_validation = ['required', 'string', 'email', 'unique:users', 'max:255'];
+            // if inactive user, create/update with new data
             if(!$validator_email->fails()) {
-                // return response()->json([
-                //     'status' => false,
-                //     'errMsg' => 'Email Unverified Re-Register'
-                // ]);
                 $existing = true;
                 $email_validation = ['required', 'string', 'email', 'max:255'];
             }
-
-            // return $email_validation;
 
             $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
@@ -486,6 +483,7 @@ class ChefController extends Controller
                 $chef->phone = $request->phone;
                 $chef->password = Hash::make($request->password);
                 $chef->api_token = Str::random(80);
+                $chef->active = 0;
                 
 
                 //Assign role
@@ -494,9 +492,17 @@ class ChefController extends Controller
                 $chef->save();
                 // add address
                 $restorant = Restorant::firstOrNew(['user_id' => $chef->id]);
+
+                $subdomain_slug = $this->makeAlias(strip_tags($request->name));
+                $subdomainSlugsFound = $this->getSubdomainSlugs($subdomain_slug);
+                $counter = 0;
+                $counter += $subdomainSlugsFound;
+                if ($counter) {
+                    $subdomain_slug = $subdomain_slug . '-' . $counter;
+                }
                 
                 $restorant->name = $request->name;
-                $restorant->subdomain = $this->makeAlias(strip_tags($request->name));
+                $restorant->subdomain = $subdomain_slug;
                 $restorant->address = $request->address;
                 $restorant->phone = $request->phone;
                 
@@ -570,18 +576,15 @@ class ChefController extends Controller
                     ->where('id', $chef->id)
                     ->update(['verification_code' => $randomOTPNumber]);
 
-                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers = "Content-Type: text/html; charset=UTF-8";
-                   
-                $subject = "HomeCook Registration OTP";
-                $msg  = "<p>Hello " . $chef->name . ",</p>";
-                $msg .= "<p>Registration OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                $msg .= "<p>Thanks & Regards,</p>";
-                $msg .= "Team HomeCook";
-                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-                mail($request->email, $subject, $msg, $headers);
+                    $param = array();
+                    $param['subject'] = $subject;
+                    $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                    $param['to_name'] = $request->name;//'Logic Rays';
+                    $data = array('chefname'=>$request->name, 'randomOTPNumber'=>$randomOTPNumber);
+                    Mail::send('mail', $data, function($message) use ($param) {
+                        $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                        $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                    });
 
                 return response()->json([
                     'status' => true,
@@ -620,6 +623,11 @@ class ChefController extends Controller
         }
     }
 
+    protected function getSubdomainSlugs($subdomain): int
+    {
+        return Restorant::where('subdomain', 'like', $subdomain)->count();
+    }
+    
     /**
      * This is use to login by using Facebook
      * @param  int $restaurant_id
@@ -1386,18 +1394,26 @@ class ChefController extends Controller
         {
             // user id is chef id
             $user_id = $user->id;
-            $where = "";
-            if($request->food_type)
+            
+            switch ($request->food_type)
             {
-                $where = " AND food_type='".$request->food_type."'";
+                case 'breakfast':
+                case 'lunch':
+                case 'dinner':
+                case 'drink':
+                    $myfoods = Items::where(['restorant_id'=>$user_id, 'available'=>1, 'food_type'=> $request->food_type])->get();
+                    break;
+                
+                default:
+                    $myfoods = Items::where(['restorant_id'=>$user_id, 'available'=>1])->get();
+                    break;
             }
 
-            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')".$where);
             foreach ($myfoods as $key => &$myfood) {
                 $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = $myfoods;
-            $food_type = array('Breafast', 'Lunch', 'Dinner');
+            $food_type = $this->foodTypeList();
             return response()->json([
                 'status' => true,
                 'food_type' => $food_type,
@@ -1434,7 +1450,34 @@ class ChefController extends Controller
                 $user_id = $user->id;
                 $item_id = $request->item_id;
                 $item = Items::where(['id' => $item_id])->first();
-                $category = $item->category;
+                // $category = $item->category;
+                $item_ingredients = $item->ingredients;
+
+                $item_ingredients_ids = array();
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $item_ingredients_ids[] = $item_ingredient->id;
+                }
+                $all_ingredients = $this->getAllIngredients($item, $item_ingredients_ids);
+
+                $item_images = array();
+                if(!empty($item->image))
+                {
+                    $item_images[] = Items::getImge($item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image2))
+                {
+                    $item_images[] = Items::getImge($item->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image3))
+                {
+                    $item_images[] = Items::getImge($item->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image4))
+                {
+                    $item_images[] = Items::getImge($item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                $item->image = $item_images;
 
                 $data = array();
                 $data['id'] = $item->id;
@@ -1442,7 +1485,8 @@ class ChefController extends Controller
                 $data['description'] = $item->description;
                 $data['image'] = $item->image;
                 $data['price'] = $item->price;
-                $data['category'] = $category->name;
+                // $data['category'] = $category->name;
+                $data['all_ingredients'] = $all_ingredients;
                 return response()->json([
                     'status' => true,
                     'data' => $data,
@@ -1467,7 +1511,7 @@ class ChefController extends Controller
     }
 
     /**
-     * This is use for get details of food item added by Restorant (chef)
+     * This is use for update details of food item added by Restorant (chef)
      * @param api_token
      * @param item_id
      *
@@ -1490,10 +1534,7 @@ class ChefController extends Controller
                 $item_id = $request->item_id;
                 $item = Items::find($item_id);
                 $item->name = $request->item_name;
-                $item->price = $request->price;
-                // $item->estimated_time = $request->estimated_time;
                 $item->description = $request->description;
-
                 if($request->hasFile('image')) {
                     $item->image = $this->saveImageVersions(
                                         $this->imagePath,
@@ -1504,13 +1545,102 @@ class ChefController extends Controller
                                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                                         ]
                                     );
-                    $item->image = url('public/'.$this->imagePath.$item->image);
+                    $item->image = url($this->imagePath.$item->image);
                 }
+                if($request->hasFile('image2')) {
+                    $item->image2 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image2,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image2 = url($this->imagePath.$item->image2);
+                }
+                if($request->hasFile('image3')) {
+                    $item->image3 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image3,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image3 = url($this->imagePath.$item->image3);
+                }
+                if($request->hasFile('image4')) {
+                    $item->image4 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image4,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image4 = url($this->imagePath.$item->image4);
+                }
+                $item->price = $request->price;
+                $item->estimated_time = $request->estimated_time;
+                $item->food_type = $request->food_type;
+                $item->updated_at = date("Y-m-d H:i:s");
+                // $item->ingredients = $request->ingredients;
                 $item->save();
 
+                ItemIngredients::where('item_id', $item_id)->delete();
+
+                $item_ingredients = $request->item_ingredients;
+                if(!is_array($request->item_ingredients)) {
+                    $item_ingredients = json_decode($request->item_ingredients, 1);
+                }
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $itemingredients = new ItemIngredients;
+                    $itemingredients->item_id = $item->id;
+                    $itemingredients->ingredient_id = $item_ingredient['id'];
+                    $itemingredients->created_at = date("Y-m-d H:i:s");
+                    $itemingredients->updated_at = date("Y-m-d H:i:s");
+                    $itemingredients->save();
+                }
+
                 $item = Items::find($item_id);
+                $item_images = array();
+                if(!empty($item->image))
+                {
+                    $item_images[] = Items::getImge($item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image2))
+                {
+                    $item_images[] = Items::getImge($item->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image3))
+                {
+                    $item_images[] = Items::getImge($item->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image4))
+                {
+                    $item_images[] = Items::getImge($item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                $item->image = $item_images;
+                $item_ingredients = $item->ingredients;
+                $item_ingredients_ids = array();
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $item_ingredients_ids[] = $item_ingredient->id;
+                }
+                $all_ingredients = $this->getAllIngredients($item, $item_ingredients_ids);
+
                 $data = array();
-                $data['item'] = $item;
+                $data['id'] = $item->id;
+                $data['name'] = $item->name;
+                $data['description'] = $item->description;
+                $data['image'] = $item_images;
+                $data['price'] = $item->price;
+                $data['ingredients'] = $all_ingredients;
+                $data['food_type'] = $this->foodTypeList();
                 return response()->json([
                     'status' => true,
                     'data' => $data,
@@ -1534,6 +1664,16 @@ class ChefController extends Controller
         }
     }
 
+    /**
+     * This is use for add new food item by Restorant (chef)
+     * @param api_token
+     * @param item_name
+     * @param price
+     * @param estimated_time
+     * @param description
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function addnewfooditem(Request $request)
     {
         $user = User::where(['api_token' => $request->api_token])->first();
@@ -1562,18 +1702,70 @@ class ChefController extends Controller
                                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                                         ]
                                     );
-                    $item->image = url('public/'.$this->imagePath.$item->image);
+                    $item->image = url($this->imagePath.$item->image);
+                }
+                if($request->hasFile('image2')) {
+                    $item->image2 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image2,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image2 = url($this->imagePath.$item->image2);
+                }
+                if($request->hasFile('image3')) {
+                    $item->image3 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image3,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image3 = url($this->imagePath.$item->image3);
+                }
+                if($request->hasFile('image4')) {
+                    $item->image4 = $this->saveImageVersions(
+                                        $this->imagePath,
+                                        $request->image4,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image4 = url($this->imagePath.$item->image4);
                 }
                 $item->price = $request->price;
-                // $item->estimated_time = $request->estimated_time;
+                $item->estimated_time = $request->estimated_time;
                 $item->category_id = 1;
-                // $item->restorant_id = $restorant->id;
+                $item->restorant_id = $restorant->id;
+                $item->food_type = $request->food_type;
                 $item->created_at = date("Y-m-d H:i:s");
                 $item->updated_at = date("Y-m-d H:i:s");
                 $item->available = 1;
                 $item->has_variants = 0;
                 $item->vat = 0;
                 $item->save();
+
+                $item_ingredients = $request->item_ingredients;
+                if(!is_array($request->item_ingredients)) {
+                    $item_ingredients = json_decode($request->item_ingredients, 1);
+                }
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $itemingredients = new ItemIngredients;
+                    $itemingredients->item_id = $item->id;
+                    $itemingredients->ingredient_id = $item_ingredient['id'];
+                    $itemingredients->created_at = date("Y-m-d H:i:s");
+                    $itemingredients->updated_at = date("Y-m-d H:i:s");
+                    $itemingredients->save();
+                }
+
                 $data = array();
                 return response()->json([
                     'status' => true,
@@ -1597,4 +1789,105 @@ class ChefController extends Controller
             ]);
         }
     }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function ingredientslist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $ingredients = $this->getAllIngredients();
+            $data = array();
+            $data['ingredients'] = $ingredients;
+            $data['food_type'] = $this->foodTypeList();
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'Ingredient list found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get all ingredients
+     *
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getAllIngredients($item='', $item_ingredients_ids=array())
+    {
+        $ingredients = Ingredients::all();
+        $ingredient_type_array = array();
+        foreach($ingredients as $ingredient)
+        {
+            if(!in_array($ingredient->ingredient_type, $ingredient_type_array))
+            {
+                $ingredient_type_array[] = $ingredient->ingredient_type;
+            }
+            $iKey = array_search($ingredient->ingredient_type, $ingredient_type_array);
+
+            if(in_array($ingredient->id, $item_ingredients_ids))
+            {
+                $image_url = url('/uploads/ingredients/selected/'.$ingredient->image);
+                $is_selected = 1;
+            }
+            else
+            {
+                $image_url = url('/uploads/ingredients/default/'.$ingredient->image);
+                $is_selected = 0;
+            }
+            $ingredient_list[$iKey]['ingredient_type'] = ucfirst($ingredient->ingredient_type);
+            $ingredient_list[$iKey]['ingredient_list'][] = array('id'=>$ingredient->id,
+                                                                'name'=>$ingredient->name,
+                                                                'image'=>$image_url,
+                                                                'is_selected'=>$is_selected
+                                                            );
+        }
+        return $ingredient_list;
+    }
+
+    public function foodTypeList()
+    {
+        return array('All', 'Breakfast', 'Lunch', 'Dinner', 'Drink');
+    }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    // public function notificationlist(Request $request)
+    // {
+    //     $user = User::where(['api_token' => $request->api_token])->first();
+    //     if($user)
+    //     {
+    //         $user_id = $user->id;
+    //         $data = array();
+    //         return response()->json([
+    //             'status' => true,
+    //             'data' => $data,
+    //             'succMsg' => 'New food item added successfully.'
+    //         ]);
+    //     }
+    //     else
+    //     {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errMsg' => 'Invalid token'
+    //         ]);
+    //     }
+    // }
 }
