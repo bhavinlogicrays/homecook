@@ -1468,7 +1468,7 @@ class ChefController extends Controller
                     $item_images[] = Items::getImge($item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
                 }
                 $item->image = $item_images;
-                
+
                 $data = array();
                 $data['id'] = $item->id;
                 $data['name'] = $item->name;
@@ -1821,12 +1821,21 @@ class ChefController extends Controller
         $return = array();
         foreach($ingredients as $ingredient)
         {
-            $image_url = url('/uploads/ingredients/'.$ingredient->image);
+            if(in_array($ingredient->id, $item_ingredients_ids))
+            {
+                $image_url = url('/uploads/ingredients/selected/'.$ingredient->image);
+                $is_selected = 1;
+            }
+            else
+            {
+                $image_url = url('/uploads/ingredients/default/'.$ingredient->image);
+                $is_selected = 0;
+            }
             $ingredient_type = ucfirst($ingredient->ingredient_type);
             $return[$ingredient_type][] = array('id'=>$ingredient->id,
                                                 'name'=>$ingredient->name,
                                                 'image'=>$image_url,
-                                                "is_selected"=>(in_array($ingredient->id, $item_ingredients_ids)) ? 1 : 0
+                                                'is_selected'=>$is_selected
                                             );
         }
         return $return;
