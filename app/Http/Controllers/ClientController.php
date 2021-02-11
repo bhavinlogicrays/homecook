@@ -337,27 +337,50 @@ class ClientController extends Controller
 
     public function getToken(Request $request)
     {
-        $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        // $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        $user = User::where(['email'=>$request->email])->first();
         if($user != null){
             if(Hash::check($request->password, $user->password)){
-
-                $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
-
-                // if($user->hasRole(['client'])){
+                if($user->active==0)
+                {
                     return response()->json([
-                        'status' => true,
+                        'status' => false,
                         'token' => $user->api_token,
-                        'is_chef' => $userStatus,
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email
+                        'user_status' => 0,
+                        'errMessage' => 'Your email is unverified, Please check your email and enter the OTP for email verification.'
                     ]);
-                // }else{
-                //     return response()->json([
-                //         'status' => false,
-                //         'errMsg' => 'User is not a client!'
-                //     ]);
-                // }
+                }
+                elseif($user->active==2)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'token' => $user->api_token,
+                        'user_status' => 2,
+                        'errMessage' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
+                    ]);
+                }
+                else
+                {
+                    $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
+
+                    // if($user->hasRole(['client'])){
+                        return response()->json([
+                            'status' => true,
+                            'token' => $user->api_token,
+                            'user_status' => 1,
+                            'is_chef' => $userStatus,
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'succMessage' => 'Welcome, You are verified chef.'
+                        ]);
+                    // }else{
+                    //     return response()->json([
+                    //         'status' => false,
+                    //         'errMsg' => 'User is not a client!'
+                    //     ]);
+                    // }
+                }
             }else{
                 return response()->json([
                     'status' => false,
