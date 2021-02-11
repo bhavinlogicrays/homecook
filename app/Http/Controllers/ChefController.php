@@ -461,7 +461,7 @@ class ChefController extends Controller
                 $chef->phone = $request->phone;
                 $chef->password = Hash::make($request->password);
                 $chef->api_token = Str::random(80);
-                
+                $chef->active = 0;
 
                 //Assign role
                 $chef->assignRole('owner');
@@ -1403,7 +1403,7 @@ class ChefController extends Controller
                 $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = $myfoods;
-            $food_type = array('All', 'Breakfast', 'Lunch', 'Dinner', 'Drink');
+            $food_type = $this->foodTypeList();
             return response()->json([
                 'status' => true,
                 'food_type' => $food_type,
@@ -1629,8 +1629,8 @@ class ChefController extends Controller
                 $data['description'] = $item->description;
                 $data['image'] = $item_images;
                 $data['price'] = $item->price;
-                // $data['category'] = $category->name;
-                $data['all_ingredients'] = $all_ingredients;
+                $data['ingredients'] = $all_ingredients;
+                $data['food_type'] = $this->foodTypeList();
                 return response()->json([
                     'status' => true,
                     'data' => $data,
@@ -1793,7 +1793,8 @@ class ChefController extends Controller
         {
             $ingredients = $this->getAllIngredients();
             $data = array();
-            $data = $ingredients;
+            $data['ingredients'] = $ingredients;
+            $data['food_type'] = $this->foodTypeList();
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -1818,9 +1819,15 @@ class ChefController extends Controller
     public function getAllIngredients($item='', $item_ingredients_ids=array())
     {
         $ingredients = Ingredients::all();
-        $return = array();
+        $ingredient_type_array = array();
         foreach($ingredients as $ingredient)
         {
+            if(!in_array($ingredient->ingredient_type, $ingredient_type_array))
+            {
+                $ingredient_type_array[] = $ingredient->ingredient_type;
+            }
+            $iKey = array_search($ingredient->ingredient_type, $ingredient_type_array);
+
             if(in_array($ingredient->id, $item_ingredients_ids))
             {
                 $image_url = url('/uploads/ingredients/selected/'.$ingredient->image);
@@ -1831,14 +1838,19 @@ class ChefController extends Controller
                 $image_url = url('/uploads/ingredients/default/'.$ingredient->image);
                 $is_selected = 0;
             }
-            $ingredient_type = ucfirst($ingredient->ingredient_type);
-            $return[$ingredient_type][] = array('id'=>$ingredient->id,
-                                                'name'=>$ingredient->name,
-                                                'image'=>$image_url,
-                                                'is_selected'=>$is_selected
-                                            );
+            $ingredient_list[$iKey]['ingredient_type'] = ucfirst($ingredient->ingredient_type);
+            $ingredient_list[$iKey]['ingredient_list'][] = array('id'=>$ingredient->id,
+                                                                'name'=>$ingredient->name,
+                                                                'image'=>$image_url,
+                                                                'is_selected'=>$is_selected
+                                                            );
         }
-        return $return;
+        return $ingredient_list;
+    }
+
+    public function foodTypeList()
+    {
+        return array('All', 'Breakfast', 'Lunch', 'Dinner', 'Drink');
     }
 
     /**

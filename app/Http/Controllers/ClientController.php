@@ -701,19 +701,8 @@ class ClientController extends Controller
                 DB::table('users')
                     ->where('id', $user->id)
                     ->update(['verification_code' => $randomOTPNumber]);
-
-                // $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                // $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                // $headers .= "MIME-Version: 1.0\r\n";
-                // $headers = "Content-Type: text/html; charset=UTF-8";
                    
                 $subject = "HomeCook Forgot Password OTP";
-                // $msg  = "<p>Hello " . $user->name . ",</p>";
-                // $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                // $msg .= "<p>Thanks & Regards,</p>";
-                // $msg .= "Team HomeCook";
-                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-                // mail($request->email, $subject, $msg, $headers);
                 
                 $param = array();
                 $param['subject'] = $subject;
@@ -756,16 +745,20 @@ class ClientController extends Controller
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         
         if($user != null){
+                $user->verification_code = NULL;
+                $user->email_verified_at = date("Y-m-d H:i:s");
+                $user->active = 2;
+                $user->update();
                 // OTP verified successfully
                 return response()->json([
                     'status' => true,
-                    'succMsg' => 'Valid Verification Code OTP for forgotpassword' 
+                    'succMsg' => 'OTP verified successfully.' 
                 ]);
             exit();
         }else{
             return response()->json([
                 'status' => false,
-                'errMsg' => 'Forgot password OTP not matched!'
+                'errMsg' => 'OTP not matched!'
             ]);
         }
     }
