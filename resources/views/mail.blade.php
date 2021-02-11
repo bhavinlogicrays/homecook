@@ -1,2 +1,4 @@
-<h1>Hi, {{ $name }}</h1>
-l<p>Sending Mail from Laravel.</p>
+<p>Hello {{ $chefname }},</p>
+<p>Registration OTP is <b>{{  $randomOTPNumber }},</b></p>
+<p>Thanks & Regards,</p>
+Team HomeCook

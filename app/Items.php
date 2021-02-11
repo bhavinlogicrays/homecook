@@ -119,6 +119,9 @@ class Items extends Model
         });
     }
 
-    
+    public function ingredients()
+    {
+        return $this->belongsToMany('App\Ingredients', 'item_ingredient', 'item_id', 'ingredient_id')->orderBy('item_ingredient.id','ASC');
+    }
 
 }
