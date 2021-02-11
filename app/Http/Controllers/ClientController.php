@@ -20,6 +20,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
+use Mail;
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -336,27 +337,50 @@ class ClientController extends Controller
 
     public function getToken(Request $request)
     {
-        $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        // $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        $user = User::where(['email'=>$request->email])->first();
         if($user != null){
             if(Hash::check($request->password, $user->password)){
-
-                $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
-
-                // if($user->hasRole(['client'])){
+                if($user->active==0)
+                {
                     return response()->json([
-                        'status' => true,
+                        'status' => false,
                         'token' => $user->api_token,
-                        'is_chef' => $userStatus,
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email
+                        'user_status' => 0,
+                        'errMessage' => 'Your email is unverified, Please check your email and enter the OTP for email verification.'
                     ]);
-                // }else{
-                //     return response()->json([
-                //         'status' => false,
-                //         'errMsg' => 'User is not a client!'
-                //     ]);
-                // }
+                }
+                elseif($user->active==2)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'token' => $user->api_token,
+                        'user_status' => 2,
+                        'errMessage' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
+                    ]);
+                }
+                else
+                {
+                    $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
+
+                    // if($user->hasRole(['client'])){
+                        return response()->json([
+                            'status' => true,
+                            'token' => $user->api_token,
+                            'user_status' => 1,
+                            'is_chef' => $userStatus,
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'succMessage' => 'Welcome, You are verified chef.'
+                        ]);
+                    // }else{
+                    //     return response()->json([
+                    //         'status' => false,
+                    //         'errMsg' => 'User is not a client!'
+                    //     ]);
+                    // }
+                }
             }else{
                 return response()->json([
                     'status' => false,
@@ -677,19 +701,18 @@ class ClientController extends Controller
                 DB::table('users')
                     ->where('id', $user->id)
                     ->update(['verification_code' => $randomOTPNumber]);
-
-                $headers  = "From: " . "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "Reply-To: ". "lr.testdemo@gmail.com" . "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers = "Content-Type: text/html; charset=UTF-8";
                    
                 $subject = "HomeCook Forgot Password OTP";
-                $msg  = "<p>Hello " . $user->name . ",</p>";
-                $msg .= "<p>Forgot password OTP is <b>" . $randomOTPNumber . ",</b></p>";
-                $msg .= "<p>Thanks & Regards,</p>";
-                $msg .= "Team HomeCook";
-                //mail("lr.testdemo@gmail.com", $subject, $msg, $headers);
-                mail($request->email, $subject, $msg, $headers);
+                
+                $param = array();
+                $param['subject'] = $subject;
+                $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                $param['to_name'] = $user->name;//'Logic Rays';
+                $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
+                Mail::send('forgotpassword', $data, function($message) use ($param) {
+                    $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                    $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                });
 
                 return response()->json([
                     'status' => true,
@@ -722,16 +745,20 @@ class ClientController extends Controller
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         
         if($user != null){
+                $user->verification_code = NULL;
+                $user->email_verified_at = date("Y-m-d H:i:s");
+                $user->active = 2;
+                $user->update();
                 // OTP verified successfully
                 return response()->json([
                     'status' => true,
-                    'succMsg' => 'Valid Verification Code OTP for forgotpassword' 
+                    'succMsg' => 'OTP verified successfully.' 
                 ]);
             exit();
         }else{
             return response()->json([
                 'status' => false,
-                'errMsg' => 'Forgot password OTP not matched!'
+                'errMsg' => 'OTP not matched!'
             ]);
         }
     }

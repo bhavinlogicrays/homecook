@@ -576,6 +576,7 @@ class ChefController extends Controller
                     ->where('id', $chef->id)
                     ->update(['verification_code' => $randomOTPNumber]);
 
+                    $subject = "HomeCook Registration OTP";
                     $param = array();
                     $param['subject'] = $subject;
                     $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
