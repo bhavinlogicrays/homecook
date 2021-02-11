@@ -22,6 +22,8 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
+use Illuminate\Validation\Rule;
+
 
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
@@ -430,9 +432,34 @@ class ChefController extends Controller
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')){
 
+            $existing = false;
+
+            // find existing users with unverified email
+            $validator_email = Validator::make($request->all(), [
+                'email' => [
+                    'required',
+                    'string',
+                     Rule::exists('users')->where(function ($query) {
+                        $query->where('active', '!=', 1);
+                    }),
+                ]
+            ]);
+            // if unverified users, update with new data
+            $email_validation = ['required', 'string', 'email', 'unique:users', 'max:255'];
+            if(!$validator_email->fails()) {
+                // return response()->json([
+                //     'status' => false,
+                //     'errMsg' => 'Email Unverified Re-Register'
+                // ]);
+                $existing = true;
+                $email_validation = ['required', 'string', 'email', 'max:255'];
+            }
+
+            // return $email_validation;
+
             $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'email', 'unique:users', 'max:255'],
+                'email' => $email_validation,
                 'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
                 'password' => ['required', 'string', 'min:6'],
 
@@ -452,7 +479,7 @@ class ChefController extends Controller
 
             if(!$validator->fails()) {
 
-                $chef = new User;
+                $chef = User::firstOrNew(['email' => $request->email]);
 
                 $chef->name = $request->name;
                 $chef->email = $request->email;
@@ -466,7 +493,7 @@ class ChefController extends Controller
 
                 $chef->save();
                 // add address
-                $restorant = new Restorant;
+                $restorant = Restorant::firstOrNew(['user_id' => $chef->id]);
                 
                 $restorant->name = $request->name;
                 $restorant->subdomain = $this->makeAlias(strip_tags($request->name));
@@ -477,7 +504,7 @@ class ChefController extends Controller
                 'alias' => substr($request->city, 2)
                 ])->id;
 
-                $address = new Address;
+                $address = Address::firstOrNew(['user_id' => $chef->id]);
                 $address->postcode = $request->postcode;
                 $address->user_id = $chef->id;
                 $address->save();
@@ -515,7 +542,7 @@ class ChefController extends Controller
 
                 $restorant->save();
 
-                $hours = new Hours;
+                $hours = Hours::firstOrNew(['restorant_id' => $restorant->id]);
                 $hours['0_from'] = $request->hours_from;
                 $hours['0_to'] = $request->hours_to;
                 $hours['1_from'] = $request->hours_from;

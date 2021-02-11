@@ -109,6 +109,7 @@ return array(
     'App\\Status' => $baseDir . '/app/Status.php',
     'App\\Tables' => $baseDir . '/app/Tables.php',
     'App\\User' => $baseDir . '/app/User.php',
+    'App\\UserNotifications' => $baseDir . '/app/UserNotifications.php',
     'App\\Visit' => $baseDir . '/app/Visit.php',
     'ArithmeticError' => $vendorDir . '/symfony/polyfill-php70/Resources/stubs/ArithmeticError.php',
     'AssertionError' => $vendorDir . '/symfony/polyfill-php70/Resources/stubs/AssertionError.php',
