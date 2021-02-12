@@ -17,7 +17,7 @@ class Items extends Model
     protected $fillable = ['name','description','image','price','category_id','vat'];
     protected $imagePath='/uploads/restorants/';
 
-    protected function getImge($imageValue,$default,$version="_large.jpg"){
+    protected function getImge($item_id,$imageValue,$default,$version="_large.jpg"){
         if($imageValue==""||$imageValue==null){
             //No image
             return $default;
@@ -33,7 +33,7 @@ class Items extends Model
                 }
             }else{
                 //Local image
-                return ($this->imagePath.$imageValue).$version;
+                return ($this->imagePath.$item_id."/".$imageValue).$version;
             }
         }
     }
@@ -52,11 +52,11 @@ class Items extends Model
 
     public function getLogomAttribute()
     {
-        return $this->getImge($this->image,config('global.restorant_details_image'));
+        // return $this->getImge($this->image,config('global.restorant_details_image'));
     }
     public function getIconAttribute()
     {
-        return $this->getImge($this->image,config('global.restorant_details_image'),'_thumbnail.jpg');
+        // return $this->getImge($this->image,config('global.restorant_details_image'),'_thumbnail.jpg');
     }
 
     public function getItempriceAttribute()
@@ -119,6 +119,9 @@ class Items extends Model
         });
     }
 
-    
+    public function ingredients()
+    {
+        return $this->belongsToMany('App\Ingredients', 'item_ingredient', 'item_id', 'ingredient_id')->orderBy('item_ingredient.id','ASC');
+    }
 
 }

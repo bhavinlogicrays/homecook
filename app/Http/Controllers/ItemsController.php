@@ -255,7 +255,6 @@ class ItemsController extends Controller
         return redirect()->route('items.edit',['item' => $item, 'restorant' => $item->category->restorant, 'restorant_id' => $item->category->restorant->id])->withStatus(__('Extras successfully added/modified.'));
     }
 
-
     public function editExtras(Request $request, Items $item)
     {
         $extras = Extras::where(['id'=>$request->extras_id])->get()->first();

@@ -23,7 +23,9 @@ use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
 use Mail;
-
+use App\Ingredients;
+use App\ItemIngredients;
+use Illuminate\Filesystem\Filesystem;
 
 use Laravel\Cashier\Exceptions\PaymentActionRequired;
 use App\Notifications\OrderNotification;
@@ -32,6 +34,8 @@ class ChefController extends Controller
 {   
 
     protected $imagePath='uploads/restorants/';
+    protected $foodItemPath='uploads/fooditems/';
+    protected $profilePicPath = 'uploads/users/';
 
     /**
      * Display a listing of the resource.
@@ -459,19 +463,53 @@ class ChefController extends Controller
                 $chef->phone = $request->phone;
                 $chef->password = Hash::make($request->password);
                 $chef->api_token = Str::random(80);
-                
+                $chef->active = 0;
 
                 //Assign role
                 $chef->assignRole('owner');
 
                 $chef->save();
+
+                if($request->hasFile('logo')) {
+                    $newchef = User::find($chef->id);
+
+                    if(!is_dir($this->profilePicPath))
+                    {
+                        mkdir($this->profilePicPath, 0755);
+                    }
+                    if(!is_dir($this->profilePicPath.$chef->id."/"))
+                    {
+                        mkdir($this->profilePicPath.$chef->id."/", 0755);
+                    }
+                    $newchef->profile_pic = $this->saveImageVersions(
+                                        $this->profilePicPath.$chef->id."/",
+                                        $request->logo,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $newchef->profile_pic = url($this->profilePicPath.$chef->id."/".$newchef->profile_pic);
+                    $newchef->save();
+                }
+
                 // add address
                 $restorant = new Restorant;
                 
+                $subdomain_slug = $this->makeAlias(strip_tags($request->name));
+                $subdomainSlugsFound = $this->getSubdomainSlugs($subdomain_slug);
+                $counter = 0;
+                $counter += $subdomainSlugsFound;
+                if ($counter) {
+                    $subdomain_slug = $subdomain_slug . '-' . $counter;
+                }
+
                 $restorant->name = $request->name;
-                $restorant->subdomain = $this->makeAlias(strip_tags($request->name));
+                $restorant->subdomain = $subdomain_slug;
                 $restorant->address = $request->address;
                 $restorant->phone = $request->phone;
+                $restorant->active = 0;
                 
                 $restorant->city_id = City::firstOrCreate(['name' => $request->city,
                 'alias' => substr($request->city, 2)
@@ -488,10 +526,22 @@ class ChefController extends Controller
                 $restorant->can_pickup = ($request->service_type=='Pickup') ? 1 : 0;
                 $restorant->can_deliver = ($request->service_type=='Deliver') ? 1 : 0;
                 $restorant->is_cooking_passionate = $request->is_cooking_passionate;
+
+                $restorant->save();
                 
-                if($request->hasFile('certificate')){
-                    $restorant->certificate=$this->saveImageVersions(
-                        $this->imagePath,
+                if($request->hasFile('certificate')) {
+                    $newrestorant_c = Restorant::find($restorant->id);
+                    
+                    if(!is_dir($this->imagePath))
+                    {
+                        mkdir($this->imagePath, 0755);
+                    }
+                    if(!is_dir($this->imagePath.$restorant->id."/"))
+                    {
+                        mkdir($this->imagePath.$restorant->id."/", 0755);
+                    }
+                    $newrestorant_c->certificate=$this->saveImageVersions(
+                        $this->imagePath.$restorant->id."/",
                         $request->certificate,
                         [
                             ['name'=>'large','w'=>590,'h'=>400],
@@ -499,11 +549,23 @@ class ChefController extends Controller
                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                         ]
                     );
+                    $newrestorant_c->certificate = url($this->imagePath.$restorant->id."/".$newrestorant_c->certificate);
+                    $newrestorant_c->save();
                 }
 
                 if($request->hasFile('logo')){
-                    $restorant->logo=$this->saveImageVersions(
-                        $this->imagePath,
+                    $newrestorant_l = Restorant::find($restorant->id);
+                    
+                    if(!is_dir($this->imagePath))
+                    {
+                        mkdir($this->imagePath, 0755);
+                    }
+                    if(!is_dir($this->imagePath.$restorant->id."/"))
+                    {
+                        mkdir($this->imagePath.$restorant->id."/", 0755);
+                    }
+                    $newrestorant_l->logo=$this->saveImageVersions(
+                        $this->imagePath.$restorant->id."/",
                         $request->logo,
                         [
                             ['name'=>'large','w'=>590,'h'=>400],
@@ -511,9 +573,9 @@ class ChefController extends Controller
                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                         ]
                     );
+                    $newrestorant_l->logo = url($this->imagePath.$restorant->id."/".$newrestorant_l->logo);
+                    $newrestorant_l->save();
                 }
-
-                $restorant->save();
 
                 $hours = new Hours;
                 $hours['0_from'] = $request->hours_from;
@@ -601,6 +663,11 @@ class ChefController extends Controller
                 'errMsg' => 'APP_SECRET missing or incorrect!'
             ]);
         }
+    }
+
+    protected function getSubdomainSlugs($subdomain): int
+    {
+        return Restorant::where('subdomain', 'like', $subdomain)->count();
     }
 
     /**
@@ -1008,7 +1075,7 @@ class ChefController extends Controller
 
             $popularItemsWithImage = array();
             foreach ($popular_items as $key => &$popularItem) {
-                $popularItem->image = Items::getImge($popularItem->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $popularItem->image = Items::getImge($popularItem->id,$popularItem->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
       
             $data['total_runing_order'] = $runing_order_count;
@@ -1095,10 +1162,14 @@ class ChefController extends Controller
                     //'restaurant_static_fee'=>$order->static_fee,
                     //'vat'=>$order->vatvalue
                 );
+                // echo "<PRE>";
+                // print_r($order->items);
+                // echo "</PRE>";
                 if($order->items->isNotEmpty())
                 {
                     $item['item_name'] = $order->items[0]->name;
-                    $item['item_image'] = $order->items[0]->icon;
+                    $item_image = Items::getImge($order->items[0]->id,$order->items[0]->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                    $item['item_image'] = $item_image;
                 }
                 array_push($items,$item);
             }
@@ -1136,7 +1207,7 @@ class ChefController extends Controller
             $revenue_item_list = DB::select("SELECT i.id, i.name, i.image, c.name AS category_name, COUNT(ohi.item_id) AS item_sale_count FROM orders AS o JOIN order_has_items AS ohi ON ohi.order_id=o.id JOIN items AS i ON i.id=ohi.item_id JOIN categories AS c ON c.id=i.category_id WHERE o.restorant_id='".$user_id."' GROUP BY ohi.item_id");
 
             foreach ($revenue_item_list as $key => &$revenue_item) {
-                $revenue_item->image = Items::getImge($revenue_item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $revenue_item->image = Items::getImge($revenue_item->id,$revenue_item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = array();
             $data['total_revenue'] = $total_revenue;
@@ -1208,11 +1279,10 @@ class ChefController extends Controller
             $review_data['rating_average'] = $review_count[0]->rating_average;
             $review_data['rating_count'] = $review_count[0]->rating_count;
 
-            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, '' AS image FROM ratings AS r WHERE r.rateable_id='".$user_id."' ORDER BY r.created_at DESC, id DESC");
+            $reviews = DB::select("SELECT DATE_FORMAT(r.created_at, '%d/%m/%Y') AS added_date, r.order_id, r.comment, r.rating, u.profile_pic FROM ratings AS r LEFT JOIN users AS u ON u.id=r.rateable_id WHERE r.rateable_id='".$user_id."' ORDER BY r.created_at DESC, r.id DESC");
             foreach($reviews as &$review)
             {
-                $image_url = url('/uploads/settings/no-image.png');
-                $review->image = $image_url;
+                $review->profile_pic = User::getImage($user_id,$review->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = array();
             $data['reviews'] = $reviews;
@@ -1242,6 +1312,8 @@ class ChefController extends Controller
         $user = User::where(['api_token' => $request->api_token])->first();
         if($user)
         {
+            $user->profile_pic = User::getImage($user->id,$user->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+
             $hours = DB::select("SELECT h.* FROM hours AS h JOIN restorants AS r ON r.id=h.restorant_id JOIN users AS u ON u.id=r.user_id WHERE u.id='".$user->id."'");
             $start_time = "0_from";
             $end_time = "0_to";
@@ -1250,6 +1322,7 @@ class ChefController extends Controller
             $data['name'] = $user->name;
             $data['email'] = $user->email;
             $data['phone'] = $user->phone;
+            $data['profile_pic'] = $user->profile_pic;
             $data['hours_from'] = $hours[0]->$start_time;
             $data['hours_to'] = $hours[0]->$end_time;
             return response()->json([
@@ -1305,13 +1378,43 @@ class ChefController extends Controller
                     $restorant = Restorant::where(['user_id'=>$user->id])->first();
                     $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
 
+                    if(!is_dir($this->profilePicPath))
+                    {
+                        mkdir($this->profilePicPath, 0755);
+                    }
+                    if(!is_dir($this->profilePicPath.$user->id."/"))
+                    {
+                        mkdir($this->profilePicPath.$user->id."/", 0755);
+                    }
+
+                    $user_data = array();
+                    $user_data['name'] = $request->name;
+                    // $user_data['email'] = $request->email;
+                    $user_data['phone'] = $request->phone;
+                    if($request->hasFile('profile_pic')) {
+                        $profile_pic = $this->saveImageVersions(
+                                            $this->profilePicPath.$user->id."/",
+                                            $request->profile_pic,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                        $profile_pic = url($this->profilePicPath.$user->id."/".$profile_pic);
+                        $user_data['profile_pic'] = $profile_pic;
+                    }
+                    
                     DB::table('users')
                         ->where(['id' => $user->id])
-                        ->update(['name' => $request->name, 'email' => $request->email, 'phone' => $request->phone]);
+                        ->update($user_data);
 
+                    $restorant_data = array();
+                    $restorant_data['name'] = $request->name;
+                    $restorant_data['phone'] = $request->phone;
                     DB::table('restorants')
                         ->where(['id' => $restorant->id])
-                        ->update(['name' => $request->name, 'phone' => $request->phone]);
+                        ->update($restorant_data);
 
                     DB::table('hours')
                         ->where(['id' => $hours->id])
@@ -1327,10 +1430,12 @@ class ChefController extends Controller
                                 ]);
 
                     $updated_user = User::where(['id' => $user->id])->first();
+                    $updated_user->profile_pic = User::getImage($user->id,$updated_user->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
                     $data = array();
                     $data['name'] = $updated_user->name;
                     $data['email'] = $updated_user->email;
                     $data['phone'] = $updated_user->phone;
+                    $data['profile_pic'] = $updated_user->profile_pic;
                     return response()->json([
                         'status' => true,
                         'data' => $data,
@@ -1369,18 +1474,26 @@ class ChefController extends Controller
         {
             // user id is chef id
             $user_id = $user->id;
-            $where = "";
-            if($request->food_type!="" && $request->food_type!="All")
+            
+            switch ($request->food_type)
             {
-                $where = " AND food_type='".$request->food_type."'";
+                case 'breakfast':
+                case 'lunch':
+                case 'dinner':
+                case 'drink':
+                    $myfoods = Items::where(['restorant_id'=>$user_id, 'available'=>1, 'food_type'=> $request->food_type])->get();
+                    break;
+                
+                default:
+                    $myfoods = Items::where(['restorant_id'=>$user_id, 'available'=>1])->get();
+                    break;
             }
 
-            $myfoods = DB::select("SELECT c.name AS category_name, i.id, i.name AS item_name, i.image, i.price, i.vat FROM restorants AS r LEFT JOIN categories AS c ON c.restorant_id=r.id LEFT JOIN items AS i ON i.category_id=c.id WHERE r.user_id='".$user_id."' AND i.available=1 AND (deleted_at IS NULL OR deleted_at='')".$where);
             foreach ($myfoods as $key => &$myfood) {
-                $myfood->image = Items::getImge($myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $myfood->image = Items::getImge($myfood->id,$myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = $myfoods;
-            $food_type = array('Breakfast', 'Lunch', 'Dinner');
+            $food_type = $this->foodTypeList();
             return response()->json([
                 'status' => true,
                 'food_type' => $food_type,
@@ -1417,10 +1530,34 @@ class ChefController extends Controller
                 $user_id = $user->id;
                 $item_id = $request->item_id;
                 $item = Items::where(['id' => $item_id])->first();
-                $category = $item->category;
+                // $category = $item->food_type;
+                $item_ingredients = $item->ingredients;
 
-                $item_ingredients = array('1', '3', '4', '7','8');
-                $all_ingredients = $this->getAllIngredients($item_ingredients);
+                $item_ingredients_ids = array();
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $item_ingredients_ids[] = $item_ingredient->id;
+                }
+                $all_ingredients = $this->getAllIngredients($item, $item_ingredients_ids);
+
+                $item_images = array();
+                if(!empty($item->image))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image2))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image3))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image4))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                $item->image = $item_images;
 
                 $data = array();
                 $data['id'] = $item->id;
@@ -1428,7 +1565,7 @@ class ChefController extends Controller
                 $data['description'] = $item->description;
                 $data['image'] = $item->image;
                 $data['price'] = $item->price;
-                $data['category'] = $category->name;
+                $data['food_type'] = $item->food_type;
                 $data['all_ingredients'] = $all_ingredients;
                 return response()->json([
                     'status' => true,
@@ -1477,14 +1614,19 @@ class ChefController extends Controller
                 $item_id = $request->item_id;
                 $item = Items::find($item_id);
                 $item->name = $request->item_name;
-                $item->price = $request->price;
-                // $item->estimated_time = $request->estimated_time;
                 $item->description = $request->description;
-                // $item->ingredients = $request->ingredients;
 
+                if(!is_dir($this->foodItemPath))
+                {
+                    mkdir($this->foodItemPath, 0755);
+                }
+                if(!is_dir($this->foodItemPath.$item_id."/"))
+                {
+                    mkdir($this->foodItemPath.$item_id."/", 0755);
+                }
                 if($request->hasFile('image')) {
                     $item->image = $this->saveImageVersions(
-                                        $this->imagePath,
+                                        $this->foodItemPath.$item_id."/",
                                         $request->image,
                                         [
                                             ['name'=>'large','w'=>590,'h'=>400],
@@ -1492,13 +1634,118 @@ class ChefController extends Controller
                                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                                         ]
                                     );
-                    $item->image = url('public/'.$this->imagePath.$item->image);
+                    $item->image = url($this->foodItemPath.$item_id."/".$item->image);
                 }
+                if($request->hasFile('image2')) {
+                    $item->image2 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image2,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image2 = url($this->foodItemPath.$item_id."/".$item->image2);
+                }
+                if($request->hasFile('image3')) {
+                    $item->image3 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image3,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image3 = url($this->foodItemPath.$item_id."/".$item->image3);
+                }
+                if($request->hasFile('image4')) {
+                    $item->image4 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image4,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $item->image4 = url($this->foodItemPath.$item_id."/".$item->image4);
+                }
+                // if($request->hasFile('image5')) {
+                //     $item->image5 = $this->saveImageVersions(
+                //                         $this->foodItemPath.$item_id."/",
+                //                         $request->image5,
+                //                         [
+                //                             ['name'=>'large','w'=>590,'h'=>400],
+                //                             ['name'=>'medium','w'=>295,'h'=>200],
+                //                             ['name'=>'thumbnail','w'=>200,'h'=>200]
+                //                         ]
+                //                     );
+                //     $item->image5 = url($this->foodItemPath.$item_id."/".$item->image5);
+                // }
+                $item->price = $request->price;
+                $item->estimated_time = $request->estimated_time;
+                $item->food_type = $request->food_type;
+                $item->updated_at = date("Y-m-d H:i:s");
+                // $item->ingredients = $request->ingredients;
                 $item->save();
 
+                ItemIngredients::where('item_id', $item_id)->delete();
+
+                $item_ingredients = $request->item_ingredients;
+                if(!is_array($request->item_ingredients)) {
+                    $item_ingredients = json_decode($request->item_ingredients, 1);
+                }
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $itemingredients = new ItemIngredients;
+                    $itemingredients->item_id = $item->id;
+                    $itemingredients->ingredient_id = $item_ingredient['id'];
+                    $itemingredients->created_at = date("Y-m-d H:i:s");
+                    $itemingredients->updated_at = date("Y-m-d H:i:s");
+                    $itemingredients->save();
+                }
+
                 $item = Items::find($item_id);
+                $item_images = array();
+                if(!empty($item->image))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image2))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image3))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                if(!empty($item->image4))
+                {
+                    $item_images[] = Items::getImge($item_id,$item->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                }
+                // if(!empty($item->image5))
+                // {
+                //     $item_images[] = Items::getImge($item_id,$item->image5,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_large.jpg");
+                // }
+                $item->image = $item_images;
+                $item_ingredients = $item->ingredients;
+                $item_ingredients_ids = array();
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $item_ingredients_ids[] = $item_ingredient->id;
+                }
+                $all_ingredients = $this->getAllIngredients($item, $item_ingredients_ids);
+
                 $data = array();
-                $data['item'] = $item;
+                $data['id'] = $item->id;
+                $data['name'] = $item->name;
+                $data['description'] = $item->description;
+                $data['image'] = $item_images;
+                $data['price'] = $item->price;
+                $data['ingredients'] = $all_ingredients;
+                $data['food_type'] = $this->foodTypeList();
                 return response()->json([
                     'status' => true,
                     'data' => $data,
@@ -1550,9 +1797,33 @@ class ChefController extends Controller
                 $item = new Items;
                 $item->name = $request->item_name;
                 $item->description = $request->description;
+                $item->price = $request->price;
+                $item->estimated_time = $request->estimated_time;
+                $item->category_id = 1;
+                $item->restorant_id = $restorant->id;
+                $item->food_type = $request->food_type;
+                $item->created_at = date("Y-m-d H:i:s");
+                $item->updated_at = date("Y-m-d H:i:s");
+                $item->available = 1;
+                $item->has_variants = 0;
+                $item->vat = 0;
+                $item->save();
+
+                $item_id = $item->id;
+
+                if(!is_dir($this->foodItemPath))
+                {
+                    mkdir($this->foodItemPath, 0755);
+                }
+                if(!is_dir($this->foodItemPath.$item_id."/"))
+                {
+                    mkdir($this->foodItemPath.$item_id."/", 0755);
+                }
+
+                $newitem = Items::find($item_id);
                 if($request->hasFile('image')) {
-                    $item->image = $this->saveImageVersions(
-                                        $this->imagePath,
+                    $newitem->image = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
                                         $request->image,
                                         [
                                             ['name'=>'large','w'=>590,'h'=>400],
@@ -1560,18 +1831,72 @@ class ChefController extends Controller
                                             ['name'=>'thumbnail','w'=>200,'h'=>200]
                                         ]
                                     );
-                    $item->image = url('public/'.$this->imagePath.$item->image);
+                    $newitem->image = url($this->foodItemPath.$item_id."/".$newitem->image);
                 }
-                $item->price = $request->price;
-                // $item->estimated_time = $request->estimated_time;
-                $item->category_id = 1;
-                // $item->restorant_id = $restorant->id;
-                $item->created_at = date("Y-m-d H:i:s");
-                $item->updated_at = date("Y-m-d H:i:s");
-                $item->available = 1;
-                $item->has_variants = 0;
-                $item->vat = 0;
-                $item->save();
+                if($request->hasFile('image2')) {
+                    $newitem->image2 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image2,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $newitem->image2 = url($this->foodItemPath.$item_id."/".$newitem->image2);
+                }
+                if($request->hasFile('image3')) {
+                    $newitem->image3 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image3,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $newitem->image3 = url($this->foodItemPath.$item_id."/".$newitem->image3);
+                }
+                if($request->hasFile('image4')) {
+                    $newitem->image4 = $this->saveImageVersions(
+                                        $this->foodItemPath.$item_id."/",
+                                        $request->image4,
+                                        [
+                                            ['name'=>'large','w'=>590,'h'=>400],
+                                            ['name'=>'medium','w'=>295,'h'=>200],
+                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                        ]
+                                    );
+                    $newitem->image4 = url($this->foodItemPath.$item_id."/".$newitem->image4);
+                }
+                // if($request->hasFile('image5')) {
+                //     $newitem->image5 = $this->saveImageVersions(
+                //                         $this->foodItemPath.$item_id."/",
+                //                         $request->image5,
+                //                         [
+                //                             ['name'=>'large','w'=>590,'h'=>400],
+                //                             ['name'=>'medium','w'=>295,'h'=>200],
+                //                             ['name'=>'thumbnail','w'=>200,'h'=>200]
+                //                         ]
+                //                     );
+                //     $newitem->image5 = url($this->foodItemPath.$item_id."/".$newitem->image5);
+                // }
+                $newitem->save();
+
+                $item_ingredients = $request->item_ingredients;
+                if(!is_array($request->item_ingredients)) {
+                    $item_ingredients = json_decode($request->item_ingredients, 1);
+                }
+                foreach($item_ingredients as $item_ingredient)
+                {
+                    $itemingredients = new ItemIngredients;
+                    $itemingredients->item_id = $item_id;
+                    $itemingredients->ingredient_id = $item_ingredient['id'];
+                    $itemingredients->created_at = date("Y-m-d H:i:s");
+                    $itemingredients->updated_at = date("Y-m-d H:i:s");
+                    $itemingredients->save();
+                }
+
                 $data = array();
                 return response()->json([
                     'status' => true,
@@ -1609,11 +1934,12 @@ class ChefController extends Controller
         {
             $ingredients = $this->getAllIngredients();
             $data = array();
-            $data = $ingredients;
+            $data['ingredients'] = $ingredients;
+            $data['food_type'] = $this->foodTypeList();
             return response()->json([
                 'status' => true,
                 'data' => $data,
-                'succMsg' => 'New food item added successfully.'
+                'succMsg' => 'Ingredient list found successfully.'
             ]);
         }
         else
@@ -1631,27 +1957,41 @@ class ChefController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function getAllIngredients($item_ingredients=array())
+    public function getAllIngredients($item='', $item_ingredients_ids=array())
     {
-        $image_url = url('/uploads/settings/no-image.png');
-        $ingredients = array();
-        $ingredients['Basic'] = array(
-                                    array('id'=>'1', 'name'=>'Salt', 'image'=>$image_url, "is_selected"=>(in_array('1', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'2', 'name'=>'Chicken', 'image'=>$image_url, "is_selected"=>(in_array('2', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'3', 'name'=>'Onion', 'image'=>$image_url, "is_selected"=>(in_array('3', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'4', 'name'=>'Garlic', 'image'=>$image_url, "is_selected"=>(in_array('4', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'5', 'name'=>'Pappers', 'image'=>$image_url, "is_selected"=>(in_array('5', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'6', 'name'=>'Ginger', 'image'=>$image_url, "is_selected"=>(in_array('6', $item_ingredients)) ? 1 : 0),
-                                );
-        $ingredients['Fruit'] = array(
-                                    array('id'=>'7', 'name'=>'Avocado', 'image'=>$image_url, "is_selected"=>(in_array('7', $item_ingredients)) ? 1 : 0), 
-                                    array('id'=>'8', 'name'=>'Apple', 'image'=>$image_url, "is_selected"=>(in_array('8', $item_ingredients)) ? 1 : 0), 
-                                    array('id'=>'9', 'name'=>'Bluberry', 'image'=>$image_url, "is_selected"=>(in_array('9', $item_ingredients)) ? 1 : 0), 
-                                    array('id'=>'10', 'name'=>'Broccoli', 'image'=>$image_url, "is_selected"=>(in_array('10', $item_ingredients)) ? 1 : 0), 
-                                    array('id'=>'11', 'name'=>'Orange', 'image'=>$image_url, "is_selected"=>(in_array('11', $item_ingredients)) ? 1 : 0),
-                                    array('id'=>'12', 'name'=>'Walnut', 'image'=>$image_url, "is_selected"=>(in_array('12', $item_ingredients)) ? 1 : 0),
-                                );
-        return $ingredients;
+        $ingredients = Ingredients::all();
+        $ingredient_type_array = array();
+        foreach($ingredients as $ingredient)
+        {
+            if(!in_array($ingredient->ingredient_type, $ingredient_type_array))
+            {
+                $ingredient_type_array[] = $ingredient->ingredient_type;
+            }
+            $iKey = array_search($ingredient->ingredient_type, $ingredient_type_array);
+
+            if(in_array($ingredient->id, $item_ingredients_ids))
+            {
+                $image_url = url('/uploads/ingredients/selected/'.$ingredient->image);
+                $is_selected = 1;
+            }
+            else
+            {
+                $image_url = url('/uploads/ingredients/default/'.$ingredient->image);
+                $is_selected = 0;
+            }
+            $ingredient_list[$iKey]['ingredient_type'] = ucfirst($ingredient->ingredient_type);
+            $ingredient_list[$iKey]['ingredient_list'][] = array('id'=>$ingredient->id,
+                                                                'name'=>$ingredient->name,
+                                                                'image'=>$image_url,
+                                                                'is_selected'=>$is_selected
+                                                            );
+        }
+        return $ingredient_list;
+    }
+
+    public function foodTypeList()
+    {
+        return array('All', 'Breakfast', 'Lunch', 'Dinner', 'Drink');
     }
 
     /**

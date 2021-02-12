@@ -17,7 +17,7 @@
                                 <h3 class="mb-0">{{ __('Chefs') }}</h3>
                             </div>
                             <div class="col-4 text-right">
-                                <a href="{{ route('admin.restaurants.create') }}" class="btn btn-sm btn-primary">{{ __('Add Chef') }}</a>
+                                {{-- <a href="{{ route('admin.restaurants.create') }}" class="btn btn-sm btn-primary">{{ __('Add Chef') }}</a> --}}
                                 @if(auth()->user()->hasRole('admin') && env('ENABLE_IMPORT_CSV', true))
                                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-import-restaurants">{{ __('Import from CSV') }}</button>
                                 @endif
@@ -34,6 +34,7 @@
                                 <tr>
                                     <th scope="col">{{ __('Name') }}</th>
                                     <th scope="col">{{ __('Logo') }}</th>
+                                    <th scope="col">{{ __('Certificate') }}</th>
                                     <th scope="col">{{ __('Owner') }}</th>
                                     <th scope="col">{{ __('Owner email') }}</th>
                                     <th scope="col">{{ __('Creation Date') }}</th>
@@ -46,6 +47,7 @@
                                     <tr>
                                         <td><a href="{{ route('admin.restaurants.edit', $restorant) }}">{{ $restorant->name }}</a></td>
                                         <td><img class="rounded" src={{ $restorant->icon }} width="50px" height="50px"></img></td>
+                                        <td><a href="{{ $restorant->certificate }}_thumbnail.jpg" download><img class="rounded" src="{{ $restorant->certificate }}_thumbnail.jpg" width="50px" height="50px"></img></td>
                                         <td>{{  $restorant->user?$restorant->user->name:__('Deleted') }}</td>
                                         <td>
                                             <a href="mailto: {{ $restorant->user?$restorant->user->email:""  }}">{{  $restorant->user?$restorant->user->email:__('Deleted')  }}</a>
@@ -54,6 +56,8 @@
                                         <td>
                                            @if($restorant->active == 1)
                                                 <span class="badge badge-success">{{ __('Active') }}</span>
+                                           @elseif($restorant->active == 2)
+                                                <span class="badge badge-info">{{ __('Certificate Approval Pending') }}</span>
                                            @else
                                                 <span class="badge badge-warning">{{ __('Not active') }}</span>
                                            @endif
@@ -72,6 +76,8 @@
                                                             @method('delete')
                                                             @if($restorant->active == 0)
                                                                 <a class="dropdown-item" href="{{ route('restaurant.activate', $restorant) }}">{{ __('Activate') }}</a>
+                                                            @elseif($restorant->active == 2)
+                                                                <a class="dropdown-item" href="{{ route('restaurant.activate', $restorant) }}">{{ __('Approve Certificate') }}</a>
                                                             @else
                                                             <button type="button" class="dropdown-item" onclick="confirm('{{ __("Are you sure you want to deactivate this Chef?") }}') ? this.parentElement.submit() : ''">
                                                                 {{ __('Deactivate') }}

@@ -45,6 +45,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
     ];
+    protected $imagePath='/uploads/users/';
 
     public function getAcceptanceratingAttribute()
     {
@@ -116,5 +117,26 @@ class User extends Authenticatable
         $client = new Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
         $body = __('Hi')." ".$this->name.".\n\n".__("Your verification code is").": ".$code;
         $client->messages->create($this->phone,["from" => env('TWILIO_FROM',""), "body" => $body]);
+    }
+
+    protected function getImage($userId,$imageValue,$default,$version="_large.jpg"){
+        if($imageValue==""||$imageValue==null){
+            //No image
+            return $default;
+        }else{
+            if(strpos($imageValue, 'http') !== false){
+                //Have http
+                if(strpos($imageValue, '.jpg') !== false||strpos($imageValue, '.jpeg') !== false||strpos($imageValue, '.png') !== false){
+                    //Has extension
+                    return $imageValue;
+                }else{
+                    //No extension
+                    return $imageValue.$version;
+                }
+            }else{
+                //Local image
+                return ($this->imagePath.$userId."/".$imageValue).$version;
+            }
+        }
     }
 }

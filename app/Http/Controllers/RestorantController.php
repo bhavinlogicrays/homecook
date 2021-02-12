@@ -20,10 +20,7 @@ use DB;
 use Carbon\Carbon;
 use App\Events\CallWaiter;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Swift_SmtpTransport;
-use Swift_Mailer;
-use Swift_Message;
-use Swift_TransportException;
+use Mail;
 
 //use Intervention\Image\Image;
 use Image;
@@ -52,7 +49,7 @@ class RestorantController extends Controller
     {
         if(auth()->user()->hasRole('admin')){
             //return view('restorants.index', ['restorants' => $restaurants->where(['active'=>1])->paginate(10)]);
-            return view('restorants.index', ['restorants' => $restaurants->orderBy('id', 'desc')->paginate(10)]);
+            return view('restorants.index', ['restorants' => $restaurants->orderBy('id', 'desc')->orderBy('active', 'desc')->paginate(10)]);
         }else return redirect()->route('orders.index')->withStatus(__('No Access'));
     }
 
@@ -466,19 +463,34 @@ class RestorantController extends Controller
         $restaurant->update();
 
         $owner = $restaurant->user;
+        //Activate the owner
+        $owner->active = 1;
+        $owner->update();
 
+        //Send email to the user/owner
+        $subject = "Homecook Chef Certificate Approval";
+        $param = array();
+        $param['subject'] = $subject;
+        $param['to_email'] = $owner->email;//'lr.testdemo@gmail.com';
+        $param['to_name'] = $owner->name;//'Logic Rays';
+        $data = array('chefname'=>$owner->name);
+        Mail::send('certificateapproval', $data, function($message) use ($param) {
+            $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+            $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+        });
+        // $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
         //if the restaurant is first time activated
-        if($owner->password == null){
-            //Activate the owner
-            $generatedPassword = Str::random(10);
+        // if($owner->password == null){
+        //     //Activate the owner
+        //     $generatedPassword = Str::random(10);
 
-            $owner->password = Hash::make($generatedPassword);
-            $owner->active = 1;
-            $owner->update();
+        //     $owner->password = Hash::make($generatedPassword);
+        //     $owner->active = 1;
+        //     $owner->update();
 
-            //Send email to the user/owner
-            $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
-        }
+        //     //Send email to the user/owner
+        //     $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
+        // }
     }
 
     public function activateRestaurant(Restorant $restaurant)
