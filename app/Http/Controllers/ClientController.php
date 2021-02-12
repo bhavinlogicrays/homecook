@@ -362,7 +362,14 @@ class ClientController extends Controller
                 else
                 {
                     $userStatus = ($user->hasRole(['owner'])) ? 'Yes' : 'No';
-                    $user->profile_pic = User::getImage($user->id,$user->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                    if($user->profile_pic)
+                    {
+                        $user->profile_pic = User::getImage($user->id,$user->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                    }
+                    else
+                    {
+                        $user->profile_pic = "";
+                    }
 
                     // if($user->hasRole(['client'])){
                         return response()->json([
