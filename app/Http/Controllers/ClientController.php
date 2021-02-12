@@ -347,7 +347,7 @@ class ClientController extends Controller
                         'status' => false,
                         // 'token' => $user->api_token,
                         'user_status' => 0,
-                        'errMessage' => 'Your email is unverified, Please check your email and enter the OTP for email verification.'
+                        'errMsg' => 'Your email is unverified, Please check your email and enter the OTP for email verification.'
                     ]);
                 }
                 elseif($user->active==2)
@@ -356,7 +356,7 @@ class ClientController extends Controller
                         'status' => false,
                         'token' => $user->api_token,
                         'user_status' => 2,
-                        'errMessage' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
+                        'errMsg' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
                     ]);
                 }
                 else
