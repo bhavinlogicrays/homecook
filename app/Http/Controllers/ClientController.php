@@ -710,7 +710,7 @@ class ClientController extends Controller
                 {
                     return response()->json([
                         'status' => false,
-                        'errMsg' => 'Your certificate is not approved yet by admin.'
+                        'errMsg' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
                     ]);
                 }
                 elseif($user->active==0)
