@@ -710,14 +710,14 @@ class ClientController extends Controller
                 {
                     return response()->json([
                         'status' => false,
-                        'errMsg' => 'Your certificate is not approved yet by admin.';
+                        'errMsg' => 'Your certificate is not approved yet by admin.'
                     ]);
                 }
                 elseif($user->active==0)
                 {
                     return response()->json([
                         'status' => false,
-                        'errMsg' => 'Your email is not verified.';
+                        'errMsg' => 'Your email is not verified.'
                     ]);
                 }
                 else
