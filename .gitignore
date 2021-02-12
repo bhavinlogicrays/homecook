@@ -5,7 +5,6 @@
 /vendor
 storage
 /var/www/html/homecook/storage
-/var/www/html/homecook/.env
 /var/www/html/homecook/Documents
 .env
 .env.backup
