@@ -701,33 +701,49 @@ class ClientController extends Controller
 
     public function forgot(Request $request)
     {
-        $user = User::where(['active'=>1,'email'=>$request->email])->first();
+        $user = User::where(['email'=>$request->email])->first();
 
         if($user != null){
             // send email
             try{
-                $randomOTPNumber = mt_rand(1000,9999);
-                DB::table('users')
-                    ->where('id', $user->id)
-                    ->update(['verification_code' => $randomOTPNumber]);
-                   
-                $subject = "HomeCook Forgot Password OTP";
-                
-                $param = array();
-                $param['subject'] = $subject;
-                $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
-                $param['to_name'] = $user->name;//'Logic Rays';
-                $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
-                Mail::send('forgotpassword', $data, function($message) use ($param) {
-                    $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
-                    $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
-                });
+                if($user->active==2)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'errMsg' => 'Your certificate is not approved yet by admin.';
+                    ]);
+                }
+                elseif($user->active==0)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'errMsg' => 'Your email is not verified.';
+                    ]);
+                }
+                else
+                {
+                    $randomOTPNumber = mt_rand(1000,9999);
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->update(['verification_code' => $randomOTPNumber]);
+                       
+                    $subject = "HomeCook Forgot Password OTP";
+                    
+                    $param = array();
+                    $param['subject'] = $subject;
+                    $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                    $param['to_name'] = $user->name;//'Logic Rays';
+                    $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
+                    Mail::send('forgotpassword', $data, function($message) use ($param) {
+                        $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                        $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                    });
 
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'Sent OTP into your email ' . $request->email
-                ]);
-
+                    return response()->json([
+                        'status' => true,
+                        'succMsg' => 'Sent OTP into your email ' . $request->email
+                    ]);
+                }
             } catch(Exceptions $e) {
                 // error_log($e);
                 $subject = "Error In HomeCook Forgot Password OTP";
