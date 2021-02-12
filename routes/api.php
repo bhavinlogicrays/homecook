@@ -75,6 +75,7 @@ Route::post('/fooddetail', 'ChefController@fooddetail')->name('chef.fooddetail')
 Route::post('/updatefooddetail', 'ChefController@updatefooddetail')->name('chef.updatefooddetail');
 Route::post('/addnewfooditem', 'ChefController@addnewfooditem')->name('chef.addnewfooditem');
 Route::post('/ingredientslist', 'ChefController@ingredientslist')->name('chef.ingredientslist');
+Route::post('/notificationlist', 'NotificationController@index')->name('notification.index');
 
 //Route::post('send-sms','SmsController@store');
 //Route::post('verify-user','SmsController@verifyContact');

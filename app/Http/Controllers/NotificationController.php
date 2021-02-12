@@ -14,7 +14,7 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        //
+        exit("Notification list here");
     }
 
     /**
