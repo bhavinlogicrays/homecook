@@ -52,7 +52,7 @@ class RestorantController extends Controller
     {
         if(auth()->user()->hasRole('admin')){
             //return view('restorants.index', ['restorants' => $restaurants->where(['active'=>1])->paginate(10)]);
-            return view('restorants.index', ['restorants' => $restaurants->orderBy('id', 'desc')->paginate(10)]);
+            return view('restorants.index', ['restorants' => $restaurants->orderBy('id', 'desc')->orderBy('active', 'desc')->paginate(10)]);
         }else return redirect()->route('orders.index')->withStatus(__('No Access'));
     }
 
@@ -466,19 +466,23 @@ class RestorantController extends Controller
         $restaurant->update();
 
         $owner = $restaurant->user;
-
+        //Activate the owner
+        $owner->active = 1;
+        $owner->update();
+        //Send email to the user/owner
+        $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
         //if the restaurant is first time activated
-        if($owner->password == null){
-            //Activate the owner
-            $generatedPassword = Str::random(10);
+        // if($owner->password == null){
+        //     //Activate the owner
+        //     $generatedPassword = Str::random(10);
 
-            $owner->password = Hash::make($generatedPassword);
-            $owner->active = 1;
-            $owner->update();
+        //     $owner->password = Hash::make($generatedPassword);
+        //     $owner->active = 1;
+        //     $owner->update();
 
-            //Send email to the user/owner
-            $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
-        }
+        //     //Send email to the user/owner
+        //     $owner->notify(new RestaurantCreated($generatedPassword, $restaurant, $owner));
+        // }
     }
 
     public function activateRestaurant(Restorant $restaurant)
