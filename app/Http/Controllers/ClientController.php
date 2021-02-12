@@ -345,7 +345,7 @@ class ClientController extends Controller
                 {
                     return response()->json([
                         'status' => false,
-                        'token' => $user->api_token,
+                        // 'token' => $user->api_token,
                         'user_status' => 0,
                         'errMessage' => 'Your email is unverified, Please check your email and enter the OTP for email verification.'
                     ]);
@@ -745,15 +745,19 @@ class ClientController extends Controller
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
         
         if($user != null){
-                $user->verification_code = NULL;
-                $user->email_verified_at = date("Y-m-d H:i:s");
-                $user->active = 2;
-                $user->update();
-                // OTP verified successfully
-                return response()->json([
-                    'status' => true,
-                    'succMsg' => 'OTP verified successfully.' 
-                ]);
+            $user->verification_code = NULL;
+            $user->email_verified_at = date("Y-m-d H:i:s");
+            $user->active = 2;
+            $user->save();
+
+            $restorant = Restorant::where(['user_id'=>$user->id])->first();
+            $restorant->active = 2;
+            $restorant->save();
+            // OTP verified successfully
+            return response()->json([
+                'status' => true,
+                'succMsg' => 'OTP verified successfully.' 
+            ]);
             exit();
         }else{
             return response()->json([
