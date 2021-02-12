@@ -343,6 +343,22 @@ class ClientController extends Controller
             if(Hash::check($request->password, $user->password)){
                 if($user->active==0)
                 {
+                    $subject = "HomeCook OTP Verification";
+                    $randomOTPNumber = mt_rand(1000,9999);
+                    DB::table('users')
+                        ->where(['email' => $request->email])
+                        ->update(['verification_code' => $randomOTPNumber]);
+                        
+                    $param = array();
+                    $param['subject'] = $subject;
+                    $param['to_email'] = $user->email;//'lr.testdemo@gmail.com';
+                    $param['to_name'] = $user->name;//'Logic Rays';
+                    $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
+                    Mail::send('mail', $data, function($message) use ($param) {
+                        $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                        $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                    });
+
                     return response()->json([
                         'status' => false,
                         // 'token' => $user->api_token,
