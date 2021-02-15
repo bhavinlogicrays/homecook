@@ -43,8 +43,8 @@
                     </div>
                 </div>
                 <div class="col-xl-6 mb-5 mb-xl-0">
-                    <br/>
-                    @include('restorants.partials.location')
+                    {{-- <br/>
+                    @include('restorants.partials.location') --}}
                     <br/>
                     @include('restorants.partials.hours')
 
