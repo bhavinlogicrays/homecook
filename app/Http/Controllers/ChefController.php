@@ -22,7 +22,8 @@ use Laravel\Socialite\Facades\Socialite;
 use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
-use Illuminate\Validatiouse Mail;
+use Illuminate\Validation\Rule;
+use Mail;
 use App\Ingredients;
 use App\ItemIngredients;
 use Illuminate\Filesystem\Filesystem;
@@ -434,8 +435,7 @@ class ChefController extends Controller
     public function register(Request $request)
     {
         if($request->has('app_secret') && $request->app_secret == env('APP_SECRET')) {
-            $existing = false;
-
+            
             // find existing users with inactive status
             $validator_email = Validator::make($request->all(), [
                 'email' => [
@@ -450,7 +450,6 @@ class ChefController extends Controller
             $email_validation = ['required', 'string', 'email', 'unique:users', 'max:255'];
             // if inactive user, create/update with new data
             if(!$validator_email->fails()) {
-                $existing = true;
                 $email_validation = ['required', 'string', 'email', 'max:255'];
             }
 
@@ -1644,66 +1643,110 @@ class ChefController extends Controller
                 {
                     mkdir($this->foodItemPath.$item_id."/", 0755);
                 }
-                if($request->hasFile('image')) {
-                    $item->image = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+
+                if($request->hasFile('image'))
+                {
+                    $image_extension = $request->file('image')->extension();
+                    if($image_extension=='jpeg' || $image_extension=='jpg' || $image_extension=='png')
+                    {
+                        $item->image = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image,
+                                                $image_extension
+                                            );
+                    }
                     $item->image = url($this->foodItemPath.$item_id."/".$item->image);
                 }
-                if($request->hasFile('image2')) {
-                    $item->image2 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image2,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+
+                if($request->hasFile('image2'))
+                {
+                    $image2_extension = $request->file('image2')->extension();
+                    if($image2_extension=='jpeg' || $image2_extension=='jpg' || $image2_extension=='png')
+                    {
+                        $item->image2 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image2,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image2 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image2,
+                                                $image2_extension
+                                            );
+                    }
                     $item->image2 = url($this->foodItemPath.$item_id."/".$item->image2);
                 }
-                if($request->hasFile('image3')) {
-                    $item->image3 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image3,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+                
+                if($request->hasFile('image3'))
+                {
+                    $image3_extension = $request->file('image3')->extension();
+                    if($image3_extension=='jpeg' || $image3_extension=='jpg' || $image3_extension=='png')
+                    {
+                        $item->image3 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image3,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image3 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image3,
+                                                $image3_extension
+                                            );
+                    }
                     $item->image3 = url($this->foodItemPath.$item_id."/".$item->image3);
                 }
-                if($request->hasFile('image4')) {
-                    $item->image4 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image4,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+                
+                if($request->hasFile('image4'))
+                {
+                    $image4_extension = $request->file('image4')->extension();
+                    if($image4_extension=='jpeg' || $image4_extension=='jpg' || $image4_extension=='png')
+                    {
+                        $item->image4 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image4,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image4 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image4,
+                                                $image4_extension
+                                            );
+                    }
                     $item->image4 = url($this->foodItemPath.$item_id."/".$item->image4);
                 }
-                // if($request->hasFile('image5')) {
-                //     $item->image5 = $this->saveImageVersions(
-                //                         $this->foodItemPath.$item_id."/",
-                //                         $request->image5,
-                //                         [
-                //                             ['name'=>'large','w'=>590,'h'=>400],
-                //                             ['name'=>'medium','w'=>295,'h'=>200],
-                //                             ['name'=>'thumbnail','w'=>200,'h'=>200]
-                //                         ]
-                //                     );
-                //     $item->image5 = url($this->foodItemPath.$item_id."/".$item->image5);
-                // }
                 $item->price = $request->price;
                 $item->estimated_time = $request->estimated_time;
                 $item->food_type = $request->food_type;
@@ -1911,3 +1954,134 @@ class ChefController extends Controller
                 {
                     $itemingredients = new ItemIngredients;
                     $itemingredients->item_id = $item_id;
+                    $itemingredients->ingredient_id = $item_ingredient['id'];
+                    $itemingredients->created_at = date("Y-m-d H:i:s");
+                    $itemingredients->updated_at = date("Y-m-d H:i:s");
+                    $itemingredients->save();
+                }
+
+                $data = array();
+                return response()->json([
+                    'status' => true,
+                    'data' => $data,
+                    'succMsg' => 'New food item added successfully.'
+                ]);
+            }
+            else
+            {
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => $validator->errors()
+                ]);
+            }
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function ingredientslist(Request $request)
+    {
+        $user = User::where(['api_token' => $request->api_token])->first();
+        if($user)
+        {
+            $ingredients = $this->getAllIngredients();
+            $data = array();
+            $data['ingredients'] = $ingredients;
+            $data['food_type'] = $this->foodTypeList();
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+                'succMsg' => 'Ingredient list found successfully.'
+            ]);
+        }
+        else
+        {
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'Invalid token'
+            ]);
+        }
+    }
+
+    /**
+     * This is use for get all ingredients
+     *
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getAllIngredients($item='', $item_ingredients_ids=array())
+    {
+        $ingredients = Ingredients::all();
+        $ingredient_type_array = array();
+        foreach($ingredients as $ingredient)
+        {
+            if(!in_array($ingredient->ingredient_type, $ingredient_type_array))
+            {
+                $ingredient_type_array[] = $ingredient->ingredient_type;
+            }
+            $iKey = array_search($ingredient->ingredient_type, $ingredient_type_array);
+
+            if(in_array($ingredient->id, $item_ingredients_ids))
+            {
+                $image_url = url('/uploads/ingredients/selected/'.$ingredient->image);
+                $is_selected = 1;
+            }
+            else
+            {
+                $image_url = url('/uploads/ingredients/default/'.$ingredient->image);
+                $is_selected = 0;
+            }
+            $ingredient_list[$iKey]['ingredient_type'] = ucfirst($ingredient->ingredient_type);
+            $ingredient_list[$iKey]['ingredient_list'][] = array('id'=>$ingredient->id,
+                                                                'name'=>$ingredient->name,
+                                                                'image'=>$image_url,
+                                                                'is_selected'=>$is_selected
+                                                            );
+        }
+        return $ingredient_list;
+    }
+
+    public function foodTypeList()
+    {
+        return array('All', 'Breakfast', 'Lunch', 'Dinner', 'Drink');
+    }
+
+    /**
+     * This is use for ingredients list
+     * @param api_token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    // public function notificationlist(Request $request)
+    // {
+    //     $user = User::where(['api_token' => $request->api_token])->first();
+    //     if($user)
+    //     {
+    //         $user_id = $user->id;
+    //         $data = array();
+    //         return response()->json([
+    //             'status' => true,
+    //             'data' => $data,
+    //             'succMsg' => 'New food item added successfully.'
+    //         ]);
+    //     }
+    //     else
+    //     {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errMsg' => 'Invalid token'
+    //         ]);
+    //     }
+    // }
+}
