@@ -77,7 +77,7 @@
                     ['name'=>'resto_cover','label'=>__('Chef Cover Image'),'value'=>$restorant->coverm,'style'=>'width: 200px; height: 100px;']
                 ]*/
                 $images=[
-                    ['name'=>'resto_logo','label'=>__('Chef Image'),'value'=>$restorant->logom,'style'=>'width: 295px; height: 200px;']
+                    ['name'=>'resto_logo','label'=>__('Chef Image'),'value'=>$restorant->logom,'style'=>'']
                 ]
             ?>
             @foreach ($images as $image)
