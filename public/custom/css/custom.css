@@ -2529,3 +2529,5 @@ background: #707070;
     border-radius: 50%!important;
 }
 
+.badge { font-size: 11px; }
+.badge.badge-info { color:red; background-color: rgb(240 247 136 / 50%); }
