@@ -1243,15 +1243,12 @@ class ChefController extends Controller
         $user = User::where(['email' => $request->email])->first();
         if($user)
         {
-            DB::enableQueryLog();
             DB::table('users')
                     ->where(['email' => $request->email])
                     ->update(['password' => Hash::make($request->password)]);
-            $querylog = DB::getQueryLog();
             return response()->json([
                 'status' => true,
-                'succMsg' => 'Password Changed successfully.',
-                'query' => $querylog
+                'succMsg' => 'Password Changed successfully.'
             ]);
         }
         else
