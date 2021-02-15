@@ -38,6 +38,13 @@ class Controller extends BaseController
         return $uuid;
     }
 
+    public function saveVideo($folder,$laravel_image_resource,$extension)
+    {
+        $uuid = Str::uuid()->toString();
+        $laravel_image_resource->move(public_path($folder), $uuid.".".$extension);
+        return $uuid;
+    }
+
     private function withinArea($point, $polygon,$n)
     {
         if($polygon[0] != $polygon[$n-1])
