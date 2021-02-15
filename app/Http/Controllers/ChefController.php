@@ -1624,66 +1624,110 @@ class ChefController extends Controller
                 {
                     mkdir($this->foodItemPath.$item_id."/", 0755);
                 }
-                if($request->hasFile('image')) {
-                    $item->image = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+
+                if($request->hasFile('image'))
+                {
+                    $image_extension = $request->file('image')->extension();
+                    if($image_extension=='jpeg' || $image_extension=='jpg' || $image_extension=='png')
+                    {
+                        $item->image = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image,
+                                                $image_extension
+                                            );
+                    }
                     $item->image = url($this->foodItemPath.$item_id."/".$item->image);
                 }
-                if($request->hasFile('image2')) {
-                    $item->image2 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image2,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+
+                if($request->hasFile('image2'))
+                {
+                    $image2_extension = $request->file('image2')->extension();
+                    if($image2_extension=='jpeg' || $image2_extension=='jpg' || $image2_extension=='png')
+                    {
+                        $item->image2 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image2,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image2 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image2,
+                                                $image2_extension
+                                            );
+                    }
                     $item->image2 = url($this->foodItemPath.$item_id."/".$item->image2);
                 }
-                if($request->hasFile('image3')) {
-                    $item->image3 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image3,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+                
+                if($request->hasFile('image3'))
+                {
+                    $image3_extension = $request->file('image3')->extension();
+                    if($image3_extension=='jpeg' || $image3_extension=='jpg' || $image3_extension=='png')
+                    {
+                        $item->image3 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image3,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image3 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image3,
+                                                $image3_extension
+                                            );
+                    }
                     $item->image3 = url($this->foodItemPath.$item_id."/".$item->image3);
                 }
-                if($request->hasFile('image4')) {
-                    $item->image4 = $this->saveImageVersions(
-                                        $this->foodItemPath.$item_id."/",
-                                        $request->image4,
-                                        [
-                                            ['name'=>'large','w'=>590,'h'=>400],
-                                            ['name'=>'medium','w'=>295,'h'=>200],
-                                            ['name'=>'thumbnail','w'=>200,'h'=>200]
-                                        ]
-                                    );
+                
+                if($request->hasFile('image4'))
+                {
+                    $image4_extension = $request->file('image4')->extension();
+                    if($image4_extension=='jpeg' || $image4_extension=='jpg' || $image4_extension=='png')
+                    {
+                        $item->image4 = $this->saveImageVersions(
+                                            $this->foodItemPath.$item_id."/",
+                                            $request->image4,
+                                            [
+                                                ['name'=>'large','w'=>590,'h'=>400],
+                                                ['name'=>'medium','w'=>295,'h'=>200],
+                                                ['name'=>'thumbnail','w'=>200,'h'=>200]
+                                            ]
+                                        );
+                    }
+                    else
+                    {
+                        $item->image4 = $this->saveVideo(
+                                                $this->foodItemPath.$item_id."/",
+                                                $request->image4,
+                                                $image4_extension
+                                            );
+                    }
                     $item->image4 = url($this->foodItemPath.$item_id."/".$item->image4);
                 }
-                // if($request->hasFile('image5')) {
-                //     $item->image5 = $this->saveImageVersions(
-                //                         $this->foodItemPath.$item_id."/",
-                //                         $request->image5,
-                //                         [
-                //                             ['name'=>'large','w'=>590,'h'=>400],
-                //                             ['name'=>'medium','w'=>295,'h'=>200],
-                //                             ['name'=>'thumbnail','w'=>200,'h'=>200]
-                //                         ]
-                //                     );
-                //     $item->image5 = url($this->foodItemPath.$item_id."/".$item->image5);
-                // }
                 $item->price = $request->price;
                 $item->estimated_time = $request->estimated_time;
                 $item->food_type = $request->food_type;

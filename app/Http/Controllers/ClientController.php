@@ -788,22 +788,22 @@ class ClientController extends Controller
         if($user != null){
             // send email
             try{
-                if($user->active==2)
-                {
-                    return response()->json([
-                        'status' => false,
-                        'errMsg' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
-                    ]);
-                }
-                elseif($user->active==0)
-                {
-                    return response()->json([
-                        'status' => false,
-                        'errMsg' => 'Your email is not verified.'
-                    ]);
-                }
-                else
-                {
+                // if($user->active==2)
+                // {
+                //     return response()->json([
+                //         'status' => false,
+                //         'errMsg' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
+                //     ]);
+                // }
+                // elseif($user->active==0)
+                // {
+                //     return response()->json([
+                //         'status' => false,
+                //         'errMsg' => 'Your email is not verified.'
+                //     ]);
+                // }
+                // else
+                // {
                     $randomOTPNumber = mt_rand(1000,9999);
                     DB::table('users')
                         ->where('id', $user->id)
@@ -825,7 +825,7 @@ class ClientController extends Controller
                         'status' => true,
                         'succMsg' => 'Sent OTP into your email ' . $request->email
                     ]);
-                }
+                // }
             } catch(Exceptions $e) {
                 // error_log($e);
                 $subject = "Error In HomeCook Forgot Password OTP";
