@@ -49,7 +49,7 @@ class RestorantController extends Controller
     {
         if(auth()->user()->hasRole('admin')){
             //return view('restorants.index', ['restorants' => $restaurants->where(['active'=>1])->paginate(10)]);
-            return view('restorants.index', ['restorants' => $restaurants->orderBy('id', 'desc')->orderBy('active', 'desc')->paginate(10)]);
+            return view('restorants.index', ['restorants' => $restaurants->where('active', '<>', 0)->orderBy('id', 'desc')->orderBy('active', 'desc')->paginate(10)]);
         }else return redirect()->route('orders.index')->withStatus(__('No Access'));
     }
 
