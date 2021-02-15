@@ -877,7 +877,7 @@ class ClientController extends Controller
         }else{
             return response()->json([
                 'status' => false,
-                'errMsg' => 'OTP not matched!'
+                'errMsg' => 'Incorrect OTP. Please enter valid code.'
             ]);
         }
     }
