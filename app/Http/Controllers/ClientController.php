@@ -781,6 +781,72 @@ class ClientController extends Controller
         }
     }
 
+    public function resendotp(Request $request)
+    {
+        $user = User::where(['email'=>$request->email])->first();
+
+        if($user != null){
+            // send email
+            try{
+                if($user->active==2)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'errMsg' => 'Your Chef Verification is under process, You will received email once Chef Verification is approved.'
+                    ]);
+                }
+                elseif($user->active==0)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'errMsg' => 'Your email is not verified.'
+                    ]);
+                }
+                else
+                {
+                    $randomOTPNumber = mt_rand(1000,9999);
+                    DB::table('users')
+                        ->where('id', $user->id)
+                        ->update(['verification_code' => $randomOTPNumber]);
+                       
+                    $subject = "HomeCook New OTP";
+                    
+                    $param = array();
+                    $param['subject'] = $subject;
+                    $param['to_email'] = $request->email;//'lr.testdemo@gmail.com';
+                    $param['to_name'] = $user->name;//'Logic Rays';
+                    $data = array('chefname'=>$user->name, 'randomOTPNumber'=>$randomOTPNumber);
+                    Mail::send('resendotp', $data, function($message) use ($param) {
+                        $message->to($param['to_email'], $param['to_name'])->subject($param['subject']);
+                        $message->from(env('MAIL_FROM_ADDRESS'),env('MAIL_FROM_NAME'));
+                    });
+
+                    return response()->json([
+                        'status' => true,
+                        'succMsg' => 'Sent OTP into your email ' . $request->email
+                    ]);
+                }
+            } catch(Exceptions $e) {
+                // error_log($e);
+                $subject = "Error In HomeCook Forgot Password OTP";
+                $fourRandomDigit = mt_rand(1000,9999);
+                $msg = $e;
+                mail("lr.testdemo@gmail.com", $subject, $msg);
+                return response()->json([
+                    'status' => false,
+                    'errMsg' => 'We are sorry for server issue, Please wait for sometime and send forgot password OTP again'
+                ]);
+            }            
+
+            exit();
+        }else{
+            return response()->json([
+                'status' => false,
+                'errMsg' => 'User not found. Incorrect email!'
+            ]);
+        }
+    }
+
     public function verificationcode(Request $request)
     {
         $user = User::where(['email'=>$request->email, 'verification_code'=>$request->verification_code])->first();
