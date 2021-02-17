@@ -871,7 +871,7 @@ class ClientController extends Controller
             // OTP verified successfully
             return response()->json([
                 'status' => true,
-                'succMsg' => 'OTP verified successfully.' 
+                'succMsg' => 'OTP verified successfully. Please login to continue.' 
             ]);
             exit();
         }else{
