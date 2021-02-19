@@ -1510,6 +1510,9 @@ class ChefController extends Controller
 
             foreach ($myfoods as $key => &$myfood) {
                 $myfood->image = Items::getImge($myfood->id,$myfood->image,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $myfood->image2 = Items::getImge($myfood->id,$myfood->image2,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $myfood->image3 = Items::getImge($myfood->id,$myfood->image3,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
+                $myfood->image4 = Items::getImge($myfood->id,$myfood->image4,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
             }
             $data = $myfoods;
             $food_type = $this->foodTypeList();
