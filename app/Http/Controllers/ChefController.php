@@ -1907,7 +1907,7 @@ class ChefController extends Controller
                                                 $image_extension
                                             );
                     }
-                    // $newitem->image = url($this->foodItemPath.$item_id."/".$newitem->image);
+                    $newitem->image = url($this->foodItemPath.$item_id."/".$newitem->image);
                 }
                 if($request->hasFile('image2'))
                 {
@@ -1932,7 +1932,7 @@ class ChefController extends Controller
                                                 $image2_extension
                                             );
                     }
-                    // $newitem->image2 = url($this->foodItemPath.$item_id."/".$newitem->image2);
+                    $newitem->image2 = url($this->foodItemPath.$item_id."/".$newitem->image2);
                 }
                 if($request->hasFile('image3'))
                 {
@@ -1957,7 +1957,7 @@ class ChefController extends Controller
                                                 $image3_extension
                                             );
                     }
-                    // $newitem->image3 = url($this->foodItemPath.$item_id."/".$newitem->image3);
+                    $newitem->image3 = url($this->foodItemPath.$item_id."/".$newitem->image3);
                 }
                 if($request->hasFile('image4'))
                 {
@@ -1982,7 +1982,7 @@ class ChefController extends Controller
                                                 $image4_extension
                                             );
                     }
-                    // $newitem->image4 = url($this->foodItemPath.$item_id."/".$newitem->image4);
+                    $newitem->image4 = url($this->foodItemPath.$item_id."/".$newitem->image4);
                 }
                 // if($request->hasFile('image5')) {
                 //     $newitem->image5 = $this->saveImageVersions(
