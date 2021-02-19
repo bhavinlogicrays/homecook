@@ -1342,10 +1342,8 @@ class ChefController extends Controller
             $data['email'] = $user->email;
             $data['phone'] = $user->phone;
             $data['profile_pic'] = $user->profile_pic;
-            if(!empty($hours)) {
-                $data['hours_from'] = $hours[0]->$start_time;
-                $data['hours_to'] = $hours[0]->$end_time;
-            }
+            $data['hours_from'] = $hours[0]->$start_time;
+            $data['hours_to'] = $hours[0]->$end_time;
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -1397,9 +1395,7 @@ class ChefController extends Controller
                 else
                 {
                     $restorant = Restorant::where(['user_id'=>$user->id])->first();
-                    if(!empty($restorant)) {
-                        $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
-                    }
+                    $hours = Hours::where(['restorant_id'=>$restorant->id])->first();
 
                     if(!is_dir($this->profilePicPath))
                     {
@@ -1432,7 +1428,6 @@ class ChefController extends Controller
                         ->where(['id' => $user->id])
                         ->update($user_data);
 
-                    if(!empty($restorant)) {
                     $restorant_data = array();
                     $restorant_data['name'] = $request->name;
                     $restorant_data['phone'] = $request->phone;
@@ -1452,7 +1447,7 @@ class ChefController extends Controller
                                     '6_from'=>$request->hours_from, '6_to'=>$request->hours_to,
                                     'updated_at'=>date("Y-m-d H:i:s")
                                 ]);
-}
+
                     $updated_user = User::where(['id' => $user->id])->first();
                     $updated_user->profile_pic = User::getImage($user->id,$updated_user->profile_pic,str_replace("_large.jpg","_thumbnail.jpg",config('global.restorant_details_image')),"_thumbnail.jpg");
                     $data = array();
