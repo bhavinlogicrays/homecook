@@ -1342,8 +1342,10 @@ class ChefController extends Controller
             $data['email'] = $user->email;
             $data['phone'] = $user->phone;
             $data['profile_pic'] = $user->profile_pic;
-            $data['hours_from'] = $hours[0]->$start_time;
-            $data['hours_to'] = $hours[0]->$end_time;
+            if(!empty($hours)) {
+                $data['hours_from'] = $hours[0]->$start_time;
+                $data['hours_to'] = $hours[0]->$end_time;
+            }
             return response()->json([
                 'status' => true,
                 'data' => $data,
